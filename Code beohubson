@@ -1,4 +1,4 @@
--- BeoHub v5.5
+-- BeoHub v5.6
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -88,9 +88,9 @@ end)
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Window = WindUI:CreateWindow({
-    Title = "BeoHub v5.5",
+    Title = "BeoHub v5.6",
     Icon = "fish",
-    Author = "by chilanguoibinhthuon",
+    Author = "by ishowdiddy",
     Folder = "BeoHub_Fishing",
     Size = UDim2.fromOffset(520, 480),
     Transparent = true,
@@ -107,7 +107,7 @@ local TabJoin = Window:Tab({ Title = "Join Server", Icon = "log-in" })
 local TabCharacter = Window:Tab({ Title = "Character", Icon = "user" })
 
 TabUpdate:Section({ Title = "Info" })
-TabUpdate:Paragraph({ Title = "BeoHub v5.5", Desc = "Auto Cast + Hold Bar + ESP + Anti AFK" })
+TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Just add 2 more teleportable islands. " })
 TabUpdate:Paragraph({ Title = "Update", Desc = "10/08/2026" })
 TabUpdate:Paragraph({
     Title = "New",
@@ -218,6 +218,8 @@ tp("Amber Isle", 1259, 6, 1401)
 tp("Battlefield Isle", 1393, 6, 169)
 tp("Mist Peak Isle", 2660, 6, -87)
 tp("World Angler Isle", -2417, 7, -204)
+tp("Weather Isle", -2911, 6, 1212)
+tp("Mystick Reef Isle", -2657, 6, -1303)
 
 TabESP:Section({ Title = "NPC ESP" })
 
