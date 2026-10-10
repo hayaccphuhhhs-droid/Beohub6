@@ -1,8 +1,4 @@
---========================================================
--- 🐧 BEOHUB FISHING v5.5 - WINDUI
--- PART 1/3: CORE + GAME CHECK + TABS
---========================================================
-
+-- BeoHub v5.5
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -12,21 +8,15 @@ local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 
-local HEAVYWEIGHT_PLACE_ID = 98502499119821
-
-if game.PlaceId ~= HEAVYWEIGHT_PLACE_ID then
+if game.PlaceId ~= 98502499119821 then
     StarterGui:SetCore("SendNotification", {
         Title = "WRONG GAME",
         Text = "This script is only for Heavyweight Fishing!",
         Duration = 5
     })
-    warn("This script is only for Heavyweight Fishing!")
     return
 end
 
-print("Heavyweight Fishing detected!")
-
--- STATE
 getgenv().SafeAutoSell = false
 getgenv().SafeSellInterval = 5
 getgenv().Beo_HoldBar = false
@@ -45,25 +35,26 @@ getgenv().ESP_Taoist = false
 getgenv().ESP_Maoshan = false
 getgenv().ESP_Player = false
 getgenv().AntiAFK = false
+getgenv().AutoSpeedControl = true
+getgenv().NormalSpeed = 46
+getgenv().FishingSpeed = 0
 getgenv().ESPList = {}
 getgenv().ESPPlayerList = {}
 
--- Anti Admin
 local AdminList = {"tom_iceren", "ctgthecreator"}
 
 local function CheckAdmin()
-    for _, player in ipairs(Players:GetPlayers()) do
-        local name = player.Name:lower()
-        for _, adminName in ipairs(AdminList) do
-            if name == adminName:lower() then
-                return true, player.Name
+    for _, plr in ipairs(Players:GetPlayers()) do
+        for _, admin in ipairs(AdminList) do
+            if plr.Name:lower() == admin:lower() then
+                return true
             end
         end
     end
-    return false, nil
+    return false
 end
 
-local function DisableAllScripts()
+local function DisableAll()
     getgenv().SafeAutoSell = false
     getgenv().Beo_HoldBar = false
     getgenv().PP_Noclip = false
@@ -79,16 +70,15 @@ end
 task.spawn(function()
     while task.wait(1) do
         if getgenv().AntiAdminEnabled then
-            local hasAdmin = CheckAdmin()
-            if hasAdmin and not getgenv().AdminInServer then
+            if CheckAdmin() and not getgenv().AdminInServer then
                 getgenv().AdminInServer = true
-                DisableAllScripts()
+                DisableAll()
                 StarterGui:SetCore("SendNotification", {
                     Title = "ADMIN",
-                    Text = "Script disabled!",
+                    Text = "Script disabled",
                     Duration = 5
                 })
-            elseif not hasAdmin and getgenv().AdminInServer then
+            elseif not CheckAdmin() and getgenv().AdminInServer then
                 getgenv().AdminInServer = false
             end
         end
@@ -100,15 +90,13 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Window = WindUI:CreateWindow({
     Title = "BeoHub v5.5",
     Icon = "fish",
-    Author = "by ishowdiddy",
+    Author = "by chilanguoibinhthuon",
     Folder = "BeoHub_Fishing",
     Size = UDim2.fromOffset(520, 480),
     Transparent = true,
     Theme = "Dark",
     Resizable = true,
     SideBarWidth = 180,
-    HideSearchBar = false,
-    ScrollBarEnabled = false,
 })
 
 local TabUpdate = Window:Tab({ Title = "Update", Icon = "info" })
@@ -118,201 +106,124 @@ local TabESP = Window:Tab({ Title = "ESP", Icon = "eye" })
 local TabJoin = Window:Tab({ Title = "Join Server", Icon = "log-in" })
 local TabCharacter = Window:Tab({ Title = "Character", Icon = "user" })
 
-print("BeoHub Fishing Part 1/3 loaded")
---========================================================
--- 🐧 BEOHUB FISHING v5.5 - WINDUI
--- PART 2/3: TABS
---========================================================
-
---========================================================
--- TAB UPDATE
---========================================================
-
-TabUpdate:Section({ Title = "Info", Icon = "info" })
-
+TabUpdate:Section({ Title = "Info" })
+TabUpdate:Paragraph({ Title = "BeoHub v5.5", Desc = "Auto Cast + Hold Bar + ESP + Anti AFK" })
+TabUpdate:Paragraph({ Title = "Update", Desc = "10/08/2026" })
 TabUpdate:Paragraph({
-    Title = "BeoHub v5.5",
-    Desc = "Auto Cast + Walk on Water + Anti Admin + ESP + Anti-AFK"
+    Title = "New",
+    Desc = "1. Auto Cast\n2. Walk on Water\n3. Anti Admin\n4. Auto Sell\n5. ESP\n6. Anti AFK"
 })
-
-TabUpdate:Paragraph({
-    Title = "Update Date",
-    Desc = "10/08/2026"
-})
-
-TabUpdate:Paragraph({
-    Title = "What's New?",
-    Desc = "1. Auto Cast\n" ..
-           "2. Walk on Water\n" ..
-           "3. Anti Admin\n" ..
-           "4. Auto Sell Fish\n" ..
-           "5. Switched to WindUI\n" ..
-           "6. ESP Taoist + Maoshan + Player\n" ..
-           "7. Anti-AFK\n" ..
-           "8. Removed PPINGYYY button\n" ..
-           "9. Updated teleport coords\n" ..
-           "10. Updated to v5.5"
-})
-
 TabUpdate:Paragraph({
     Title = "Anti Admin",
-    Desc = "Auto detects admin:\n" ..
-           "- tom_iceren\n" ..
-           "- ctgthecreator\n" ..
-           "When admin joins -> DISABLE all scripts!"
+    Desc = "Detect: tom_iceren, ctgthecreator\nAdmin join = disable script"
 })
-
 TabUpdate:Button({
-    Title = "No motherfucking thing here",
-    Icon = "rocket",
+    Title = "No fucking thing here",
     Callback = function()
         pcall(function()
             loadstring(game:HttpGet("https://bombaus-auth.phu-tho-vn.workers.dev/raw/khfresh-hub.lua"))()
         end)
     end
 })
-
 TabUpdate:Paragraph({
     Title = "🥀",
     Desc = "same here"
 })
 
-TabUpdate:Paragraph({
-    Title = "Notes",
-    Desc = "1. Don't teleport constantly\n" ..
-           "2. Use low-player servers when farming\n" ..
-           "3. Test on alt account first"
-})
-
---========================================================
--- TAB FISHING
---========================================================
-
-TabFishing:Section({ Title = "Auto Fishing", Icon = "fish" })
+TabFishing:Section({ Title = "Auto Fishing" })
 
 TabFishing:Toggle({
     Title = "Auto Cast",
-    Desc = "Auto cast every 0.6s when not fishing",
     Default = false,
-    Flag = "AutoCast",
     Callback = function(v) getgenv().AutoCast = v end
 })
 
 TabFishing:Toggle({
-    Title = "Auto Sell Fish",
-    Desc = "Auto sell every 5s",
+    Title = "Auto Sell",
     Default = false,
-    Flag = "SafeAutoSell",
     Callback = function(v) getgenv().SafeAutoSell = v end
 })
 
 TabFishing:Toggle({
     Title = "Hold Bar",
-    Desc = "Keep fishing bar in the middle",
     Default = false,
-    Flag = "Beo_HoldBar",
     Callback = function(v) getgenv().Beo_HoldBar = v end
 })
 
 TabFishing:Button({
-    Title = "Sell All Fish",
-    Icon = "dollar-sign",
+    Title = "Sell All",
     Callback = function()
         pcall(function()
-            if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("SellFish") then
+            if RS.Events and RS.Events:FindFirstChild("SellFish") then
                 RS.Events.SellFish:FireServer("All")
             end
         end)
     end
 })
 
-TabFishing:Section({ Title = "Skills", Icon = "zap" })
+TabFishing:Section({ Title = "Skills" })
 
 TabFishing:Toggle({
     Title = "All Skills",
-    Desc = "Spam Z X C V",
     Default = false,
-    Flag = "PP_AutoSkillAll",
     Callback = function(v) getgenv().PP_AutoSkillAll = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill Z",
     Default = false,
-    Flag = "PP_Skill_Z",
     Callback = function(v) getgenv().PP_Skill_Z = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill X",
     Default = false,
-    Flag = "PP_Skill_X",
     Callback = function(v) getgenv().PP_Skill_X = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill C",
     Default = false,
-    Flag = "PP_Skill_C",
     Callback = function(v) getgenv().PP_Skill_C = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill V",
     Default = false,
-    Flag = "PP_Skill_V",
     Callback = function(v) getgenv().PP_Skill_V = v end
 })
 
-TabFishing:Paragraph({
-    Title = "Guide",
-    Desc = "Auto Cast: Auto cast every 0.6s when not fishing.\n" ..
-           "Auto Sell Fish: Auto sell every 5s.\n" ..
-           "Hold Bar: Keep fishing bar in the middle.\n" ..
-           "Skills: Spam Z/X/C/V every 1s."
-})
+TabTeleport:Section({ Title = "Islands" })
 
---========================================================
--- TAB TELEPORT
---========================================================
-
-TabTeleport:Section({ Title = "Teleport Islands", Icon = "map-pin" })
-
-local function addTP(tab, name, x, y, z)
-    tab:Button({
+local function tp(name, x, y, z)
+    TabTeleport:Button({
         Title = name,
-        Icon = "map-pin",
         Callback = function()
-            if lp.Character and lp.Character:FindFirstChild("HumanoidRootPart") then
-                lp.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
+            local char = lp.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
             end
         end
     })
 end
 
-addTP(TabTeleport, "Beginning Isle", -201, 6, 35)
-addTP(TabTeleport, "Bamboo Isle", -1223, 6, -25)
-addTP(TabTeleport, "Fallout Isle", 65, 6, 1181)
-addTP(TabTeleport, "Sovereign Isle", -1277, 6, 1239)
-addTP(TabTeleport, "Perch Isle", -62, 9, -1322)
-addTP(TabTeleport, "Frost Isle", -1366, 9, -1496)
-addTP(TabTeleport, "Coconut Isle", 1493, 6, -1431)
-addTP(TabTeleport, "Amber Isle", 1259, 6, 1401)
-addTP(TabTeleport, "Battlefield Isle", 1393, 6, 169)
-addTP(TabTeleport, "Mist Peak Isle", 2660, 6, -87)
-addTP(TabTeleport, "World Angler Isle", -2417, 7, -204)
+tp("Beginning Isle", -201, 6, 35)
+tp("Bamboo Isle", -1223, 6, -25)
+tp("Fallout Isle", 65, 6, 1181)
+tp("Sovereign Isle", -1277, 6, 1239)
+tp("Perch Isle", -62, 9, -1322)
+tp("Frost Isle", -1366, 9, -1496)
+tp("Coconut Isle", 1493, 6, -1431)
+tp("Amber Isle", 1259, 6, 1401)
+tp("Battlefield Isle", 1393, 6, 169)
+tp("Mist Peak Isle", 2660, 6, -87)
+tp("World Angler Isle", -2417, 7, -204)
 
---========================================================
--- TAB ESP
---========================================================
-
-TabESP:Section({ Title = "ESP NPC", Icon = "eye" })
+TabESP:Section({ Title = "NPC ESP" })
 
 TabESP:Toggle({
     Title = "ESP Taoist",
-    Desc = "See Taoist through walls (orange)",
     Default = false,
-    Flag = "ESP_Taoist",
     Callback = function(v)
         getgenv().ESP_Taoist = v
         if not v then
@@ -330,9 +241,7 @@ TabESP:Toggle({
 
 TabESP:Toggle({
     Title = "ESP Maoshan",
-    Desc = "See Maoshan through walls (purple)",
     Default = false,
-    Flag = "ESP_Maoshan",
     Callback = function(v)
         getgenv().ESP_Maoshan = v
         if not v then
@@ -348,28 +257,23 @@ TabESP:Toggle({
     end
 })
 
-TabESP:Section({ Title = "ESP Player", Icon = "user" })
-
 TabESP:Toggle({
     Title = "ESP Player",
-    Desc = "Show player names through walls (white)",
     Default = false,
-    Flag = "ESP_Player",
     Callback = function(v)
         getgenv().ESP_Player = v
         if not v then
-            for player, data in pairs(getgenv().ESPPlayerList) do
+            for plr, data in pairs(getgenv().ESPPlayerList) do
                 if data.billboard then data.billboard:Destroy() end
                 if data.highlight then data.highlight:Destroy() end
-                getgenv().ESPPlayerList[player] = nil
+                getgenv().ESPPlayerList[plr] = nil
             end
         end
     end
 })
 
 TabESP:Button({
-    Title = "Clear All ESP",
-    Icon = "trash",
+    Title = "Clear ESP",
     Callback = function()
         for npc, data in pairs(getgenv().ESPList) do
             if data.highlight then data.highlight:Destroy() end
@@ -377,8 +281,7 @@ TabESP:Button({
             if data.connection then data.connection:Disconnect() end
         end
         getgenv().ESPList = {}
-        
-        for player, data in pairs(getgenv().ESPPlayerList) do
+        for plr, data in pairs(getgenv().ESPPlayerList) do
             if data.billboard then data.billboard:Destroy() end
             if data.highlight then data.highlight:Destroy() end
         end
@@ -386,55 +289,38 @@ TabESP:Button({
     end
 })
 
-TabESP:Paragraph({
-    Title = "Guide",
-    Desc = "ESP Taoist: Orange\n" ..
-           "ESP Maoshan: Purple\n" ..
-           "ESP Player: White\n" ..
-           "Toggle to see through walls."
-})
-
---========================================================
--- TAB JOIN SERVER
---========================================================
-
-TabJoin:Section({ Title = "Server Hop", Icon = "log-in" })
+TabJoin:Section({ Title = "Server" })
 
 local jobId = ""
 
 TabJoin:Input({
     Title = "Job ID",
-    Placeholder = "Enter Job ID...",
-    Value = "",
-    Flag = "JobId",
+    Placeholder = "Enter job id...",
     Callback = function(v) jobId = v end
 })
 
 TabJoin:Button({
-    Title = "Join Server",
-    Icon = "log-in",
+    Title = "Join",
     Callback = function()
-        if jobId == "" then return end
-        pcall(function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, lp)
-        end)
-    end
-})
-
-TabJoin:Button({
-    Title = "Copy Current Job ID",
-    Icon = "copy",
-    Callback = function()
-        if game.JobId and game.JobId ~= "" then
-            setclipboard(game.JobId)
-            print("Copied: " .. game.JobId)
+        if jobId ~= "" then
+            pcall(function()
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, lp)
+            end)
         end
     end
 })
 
 TabJoin:Button({
-    Title = "Join From Clipboard",
-    Icon = "clipboard",
+    Title = "Copy Job ID",
+    Callback = function()
+        if game.JobId ~= "" then
+            setclipboard(game.JobId)
+        end
+    end
+})
+
+TabJoin:Button({
+    Title = "Join Clipboard",
     Callback = function()
         local clip = getclipboard()
         if clip and clip ~= "" then
@@ -445,123 +331,82 @@ TabJoin:Button({
     end
 })
 
-TabJoin:Section({ Title = "Low Player Server", Icon = "users" })
-
 TabJoin:Button({
-    Title = "Join Lowest Player Server",
-    Icon = "log-in",
+    Title = "Join Low Player Server",
     Callback = function()
         pcall(function()
             local url = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
-            local response = HttpService:JSONDecode(game:HttpGet(url))
-            
-            local bestServer = nil
-            local minPlayers = 999
-            
-            if response and response.data then
-                for _, server in ipairs(response.data) do
-                    if server.playing < minPlayers and server.playing > 0 and server.id ~= game.JobId then
-                        minPlayers = server.playing
-                        bestServer = server.id
+            local data = HttpService:JSONDecode(game:HttpGet(url))
+            local best, minP = nil, 999
+            if data and data.data then
+                for _, s in ipairs(data.data) do
+                    if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
+                        minP = s.playing
+                        best = s.id
                     end
                 end
             end
-            
-            if bestServer then
-                TeleportService:TeleportToPlaceInstance(game.PlaceId, bestServer, lp)
+            if best then
+                TeleportService:TeleportToPlaceInstance(game.PlaceId, best, lp)
             end
         end)
     end
 })
 
-TabJoin:Paragraph({
-    Title = "Guide",
-    Desc = "1. Enter Job ID above\n" ..
-           "2. Click 'Join Server'\n" ..
-           "3. Or 'Copy Current Job ID' to get current server ID\n" ..
-           "4. Or 'Join From Clipboard' if you copied an ID\n" ..
-           "5. Or 'Join Lowest Player Server' to join an empty server"
-})
-
---========================================================
--- TAB CHARACTER
---========================================================
-
-TabCharacter:Section({ Title = "Character", Icon = "user" })
+TabCharacter:Section({ Title = "Character" })
 
 TabCharacter:Toggle({
     Title = "Noclip",
-    Desc = "Noclip for character",
     Default = false,
-    Flag = "PP_Noclip",
     Callback = function(v) getgenv().PP_Noclip = v end
 })
 
 local WaterParts = {}
-local OriginalWaterData = {}
+local OriginalWater = {}
 
-local function FindWaterParts()
+local function FindWater()
     WaterParts = {}
     for _, obj in pairs(workspace:GetDescendants()) do
         if obj:IsA("BasePart") and obj.Name:lower() == "water" then
             table.insert(WaterParts, obj)
         end
     end
-    return #WaterParts
 end
 
-local function EnableWalkOnWater()
-    local count = FindWaterParts()
-    if count == 0 then return false end
-    for _, waterPart in ipairs(WaterParts) do
-        OriginalWaterData[waterPart] = {CanCollide = waterPart.CanCollide}
-        waterPart.CanCollide = true
+local function EnableWater()
+    FindWater()
+    for _, w in ipairs(WaterParts) do
+        OriginalWater[w] = w.CanCollide
+        w.CanCollide = true
     end
-    return true
 end
 
-local function DisableWalkOnWater()
-    for waterPart, data in pairs(OriginalWaterData) do
-        if waterPart and waterPart.Parent then
-            waterPart.CanCollide = data.CanCollide
+local function DisableWater()
+    for w, old in pairs(OriginalWater) do
+        if w and w.Parent then
+            w.CanCollide = old
         end
     end
-    OriginalWaterData = {}
+    OriginalWater = {}
 end
 
 TabCharacter:Toggle({
     Title = "Walk on Water",
-    Desc = "Walk on water surface",
     Default = false,
-    Flag = "WalkOnWater",
     Callback = function(v)
         getgenv().WalkOnWater = v
-        if v then EnableWalkOnWater() else DisableWalkOnWater() end
+        if v then EnableWater() else DisableWater() end
     end
 })
 
-TabCharacter:Section({ Title = "Anti-AFK", Icon = "user-check" })
-
 TabCharacter:Toggle({
-    Title = "Anti-AFK",
-    Desc = "Auto jump to prevent kick",
+    Title = "Anti AFK",
     Default = false,
-    Flag = "AntiAFK",
-    Callback = function(v)
-        getgenv().AntiAFK = v
-        if v then
-            StarterGui:SetCore("SendNotification", {
-                Title = "Anti-AFK",
-                Text = "Anti-AFK enabled",
-                Duration = 3
-            })
-        end
-    end
+    Callback = function(v) getgenv().AntiAFK = v end
 })
 
 TabCharacter:Button({
     Title = "Fix Lag",
-    Icon = "zap",
     Callback = function()
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/Beohub/refs/heads/main/Fix%20lag"))()
@@ -571,64 +416,39 @@ TabCharacter:Button({
 
 TabCharacter:Button({
     Title = "Copy Coordinates",
-    Icon = "map-pin",
     Callback = function()
         local char = lp.Character
-        if not char then return end
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-        local coords = math.floor(hrp.Position.X) .. ", " .. math.floor(hrp.Position.Y) .. ", " .. math.floor(hrp.Position.Z)
-        setclipboard(coords)
-        print(coords)
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            local p = char.HumanoidRootPart.Position
+            setclipboard(math.floor(p.X) .. ", " .. math.floor(p.Y) .. ", " .. math.floor(p.Z))
+        end
     end
 })
 
-TabCharacter:Section({ Title = "Codes", Icon = "key" })
-
 local multiCode = ""
-
 TabCharacter:Input({
-    Title = "Enter multiple codes",
-    Placeholder = "One code per line...",
-    Value = "",
-    Flag = "MultiCode",
+    Title = "Codes",
+    Placeholder = "One code per line",
     Callback = function(v) multiCode = v end
 })
 
 TabCharacter:Button({
-    Title = "Redeem All Codes",
-    Icon = "check",
+    Title = "Redeem Codes",
     Callback = function()
         if multiCode == "" then return end
-        local codes = {}
         for code in multiCode:gmatch("[^\r\n]+") do
-            table.insert(codes, code)
+            pcall(function()
+                if RS.Events:FindFirstChild("RedeemCode") then
+                    RS.Events.RedeemCode:FireServer(code)
+                elseif RS.Events:FindFirstChild("Code") then
+                    RS.Events.Code:FireServer(code)
+                end
+            end)
+            task.wait(0.5)
         end
-        task.spawn(function()
-            for i, code in ipairs(codes) do
-                pcall(function()
-                    if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("RedeemCode") then
-                        RS.Events.RedeemCode:FireServer(code)
-                    elseif RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Code") then
-                        RS.Events.Code:FireServer(code)
-                    end
-                end)
-                print("[" .. i .. "/" .. #codes .. "] " .. code)
-                task.wait(0.5)
-            end
-        end)
     end
 })
-
-print("BeoHub Fishing Part 2/3 loaded")
---========================================================
--- 🐧 BEOHUB FISHING v5.5 - WINDUI
--- PART 3/3: AUTO LOGIC
---========================================================
-
---========================================================
--- AUTO SKILL REMOTE SYSTEM
---========================================================
+-- part 2 logic
 
 local PossibleRemotes = {
     "UseSkill", "CastSkill", "Skill", "ActivateSkill",
@@ -638,9 +458,9 @@ local PossibleRemotes = {
 local function findSkillRemote()
     local events = RS:FindFirstChild("Events") or RS
     for _, name in ipairs(PossibleRemotes) do
-        local remote = events:FindFirstChild(name, true)
-        if remote and (remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction")) then
-            return remote
+        local r = events:FindFirstChild(name, true)
+        if r and (r:IsA("RemoteEvent") or r:IsA("RemoteFunction")) then
+            return r
         end
     end
     return nil
@@ -648,23 +468,15 @@ end
 
 local skillRemote = findSkillRemote()
 
-if skillRemote then
-    print("✅ Skill Remote found:", skillRemote.Name)
-else
-    warn("⚠️ Skill remote not found — using VIM fallback")
-end
-
 local function useSkill(slot)
     if skillRemote then
         pcall(function()
             skillRemote:FireServer(slot)
             skillRemote:FireServer(slot:lower())
             skillRemote:FireServer({Skill = slot})
-            skillRemote:FireServer(1)
         end)
         return
     end
-    
     pcall(function()
         VIM:SendKeyEvent(true, Enum.KeyCode[slot], false, game)
         task.wait(0.05)
@@ -672,56 +484,42 @@ local function useSkill(slot)
     end)
 end
 
+-- auto skill
 task.spawn(function()
     while task.wait(1) do
-        if getgenv().PP_AutoSkillAll then
-            pcall(function()
-                local char = lp.Character
-                if not char then return end
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hum or hum.Health <= 0 then return end
-                
-                useSkill("Z")
-                task.wait(0.15)
-                useSkill("X")
-                task.wait(0.15)
-                useSkill("C")
-                task.wait(0.15)
+        pcall(function()
+            local char = lp.Character
+            if not char then return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum or hum.Health <= 0 then return end
+
+            if getgenv().PP_AutoSkillAll then
+                useSkill("Z") task.wait(0.15)
+                useSkill("X") task.wait(0.15)
+                useSkill("C") task.wait(0.15)
                 useSkill("V")
-            end)
-        else
-            pcall(function()
-                local char = lp.Character
-                if not char then return end
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hum or hum.Health <= 0 then return end
-                
+            else
                 if getgenv().PP_Skill_Z then useSkill("Z") task.wait(0.15) end
                 if getgenv().PP_Skill_X then useSkill("X") task.wait(0.15) end
                 if getgenv().PP_Skill_C then useSkill("C") task.wait(0.15) end
-                if getgenv().PP_Skill_V then useSkill("V") task.wait(0.15) end
-            end)
-        end
+                if getgenv().PP_Skill_V then useSkill("V") end
+            end
+        end)
     end
 end)
 
---========================================================
--- AUTO CAST
---========================================================
-
+-- auto cast
 task.spawn(function()
     while task.wait(0.6) do
         if getgenv().AutoCast then
             pcall(function()
                 local char = lp.Character
-                local MainGui = lp.PlayerGui:FindFirstChild("MainGui")
-
-                if char and MainGui then
-                    local isFishingAttr = char:GetAttribute("Fishing")
-                    local fishingUI = MainGui:FindFirstChild("Fishing")
-
-                    if not isFishingAttr and (not fishingUI or not fishingUI.Visible) then
-                        if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Fishing") then
+                local gui = lp.PlayerGui:FindFirstChild("MainGui")
+                if char and gui then
+                    local fishing = char:GetAttribute("Fishing")
+                    local ui = gui:FindFirstChild("Fishing")
+                    if not fishing and (not ui or not ui.Visible) then
+                        if RS.Events and RS.Events:FindFirstChild("Fishing") then
                             RS.Events.Fishing:FireServer()
                         end
                     end
@@ -731,15 +529,12 @@ task.spawn(function()
     end
 end)
 
---========================================================
--- AUTO SELL
---========================================================
-
+-- auto sell
 task.spawn(function()
     while task.wait(0.3) do
         if getgenv().SafeAutoSell then
             pcall(function()
-                if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("SellFish") then
+                if RS.Events and RS.Events:FindFirstChild("SellFish") then
                     RS.Events.SellFish:FireServer("All")
                 end
             end)
@@ -748,17 +543,12 @@ task.spawn(function()
     end
 end)
 
---========================================================
--- HOLD BAR (BeoHub Exclusive)
---========================================================
-
+-- hold bar
 RunService.RenderStepped:Connect(function()
     if not getgenv().Beo_HoldBar then return end
-
     pcall(function()
         local gui = lp.PlayerGui:FindFirstChild("MainGui")
         if not gui then return end
-
         local fishingUI = gui:FindFirstChild("Fishing")
         if not fishingUI or not fishingUI.Visible then return end
 
@@ -769,36 +559,27 @@ RunService.RenderStepped:Connect(function()
                 bar.Position = UDim2.new(0.5, 0, bar.Position.Y.Scale, 0)
             end
         end
-
-        if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Fishing") then
+        if RS.Events and RS.Events:FindFirstChild("Fishing") then
             RS.Events.Fishing:FireServer("1")
         end
     end)
 end)
 
---========================================================
--- AUTO SPEED CONTROL WHILE FISHING
---========================================================
-
-getgenv().AutoSpeedControl = true
-getgenv().NormalSpeed = 46
-getgenv().FishingSpeed = 0
-
+-- speed while fishing
 task.spawn(function()
     while task.wait(0.15) do
         if not getgenv().AutoSpeedControl then continue end
-
         pcall(function()
             local char = lp.Character
             if not char then return end
             local hum = char:FindFirstChildOfClass("Humanoid")
             if not hum then return end
 
-            local MainGui = lp.PlayerGui:FindFirstChild("MainGui")
-            local fishingUI = MainGui and MainGui:FindFirstChild("Fishing")
-            local isFishingAttr = char:GetAttribute("Fishing")
+            local gui = lp.PlayerGui:FindFirstChild("MainGui")
+            local fishingUI = gui and gui:FindFirstChild("Fishing")
+            local fishing = char:GetAttribute("Fishing")
 
-            if (fishingUI and fishingUI.Visible) or isFishingAttr then
+            if (fishingUI and fishingUI.Visible) or fishing then
                 hum.WalkSpeed = getgenv().FishingSpeed or 0
             else
                 if not getgenv().PP_Noclip then
@@ -809,15 +590,11 @@ task.spawn(function()
     end
 end)
 
---========================================================
--- NOCLIP + WALKSPEED
---========================================================
-
+-- noclip
 RunService.Stepped:Connect(function()
     pcall(function()
         local char = lp.Character
         if not char then return end
-
         if getgenv().PP_Noclip then
             for _, p in ipairs(char:GetDescendants()) do
                 if p:IsA("BasePart") then
@@ -828,10 +605,7 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
---========================================================
--- ANTI-AFK
---========================================================
-
+-- anti afk
 task.spawn(function()
     while task.wait(60) do
         if getgenv().AntiAFK then
@@ -852,96 +626,76 @@ task.spawn(function()
     end
 end)
 
---========================================================
--- ESP NPC SYSTEM
---========================================================
-
-local function CreateESP(npc, npcType, color)
+-- esp npc
+local function CreateESP(npc, typ, color)
     if not npc or not npc:IsA("Model") then return end
     if getgenv().ESPList[npc] then return end
-    
-    local hrp = npc:FindFirstChild("HumanoidRootPart") or npc:FindFirstChild("PrimaryPart")
+    local hrp = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart
     if not hrp then return end
-    
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "NPC_ESP"
-    highlight.Adornee = npc
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = color
-    highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = npc
-    
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "NPC_NameTag"
-    billboard.Size = UDim2.fromOffset(200, 50)
-    billboard.StudsOffset = Vector3.new(0, 4, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Adornee = hrp
-    billboard.Parent = npc
-    
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1, 0, 1, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = npc.Name
-    nameLabel.TextColor3 = color
-    nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    nameLabel.TextStrokeTransparency = 0
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 18
-    nameLabel.Parent = billboard
-    
-    local distLabel = Instance.new("TextLabel")
-    distLabel.Size = UDim2.new(1, 0, 0, 20)
-    distLabel.Position = UDim2.new(0, 0, 1, 0)
-    distLabel.BackgroundTransparency = 1
-    distLabel.Text = "0m"
-    distLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-    distLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    distLabel.TextStrokeTransparency = 0
-    distLabel.Font = Enum.Font.GothamBold
-    distLabel.TextSize = 14
-    distLabel.Parent = billboard
-    
-    local updateConn
-    updateConn = RunService.RenderStepped:Connect(function()
+
+    local hl = Instance.new("Highlight")
+    hl.Adornee = npc
+    hl.FillTransparency = 1
+    hl.OutlineColor = color
+    hl.OutlineTransparency = 0
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = npc
+
+    local bill = Instance.new("BillboardGui")
+    bill.Size = UDim2.fromOffset(200, 50)
+    bill.StudsOffset = Vector3.new(0, 4, 0)
+    bill.AlwaysOnTop = true
+    bill.Adornee = hrp
+    bill.Parent = npc
+
+    local nameLbl = Instance.new("TextLabel")
+    nameLbl.Size = UDim2.new(1, 0, 1, 0)
+    nameLbl.BackgroundTransparency = 1
+    nameLbl.Text = npc.Name
+    nameLbl.TextColor3 = color
+    nameLbl.TextStrokeTransparency = 0
+    nameLbl.Font = Enum.Font.GothamBold
+    nameLbl.TextSize = 18
+    nameLbl.Parent = bill
+
+    local distLbl = Instance.new("TextLabel")
+    distLbl.Size = UDim2.new(1, 0, 0, 20)
+    distLbl.Position = UDim2.new(0, 0, 1, 0)
+    distLbl.BackgroundTransparency = 1
+    distLbl.Text = "0m"
+    distLbl.TextColor3 = Color3.fromRGB(255, 255, 0)
+    distLbl.TextStrokeTransparency = 0
+    distLbl.Font = Enum.Font.GothamBold
+    distLbl.TextSize = 14
+    distLbl.Parent = bill
+
+    local conn
+    conn = RunService.RenderStepped:Connect(function()
         if not hrp or not hrp.Parent then
-            updateConn:Disconnect()
+            conn:Disconnect()
             return
         end
-        
-        local char = lp.Character
-        local myHrp = char and char:FindFirstChild("HumanoidRootPart")
-        if myHrp then
-            local dist = (hrp.Position - myHrp.Position).Magnitude
-            distLabel.Text = math.floor(dist) .. "m"
+        local my = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+        if my then
+            distLbl.Text = math.floor((hrp.Position - my.Position).Magnitude) .. "m"
         end
     end)
-    
+
     getgenv().ESPList[npc] = {
-        highlight = highlight,
-        billboard = billboard,
-        connection = updateConn,
-        type = npcType
+        highlight = hl,
+        billboard = bill,
+        connection = conn,
+        type = typ
     }
 end
 
 local function GetNPCType(obj)
-    if not obj:IsA("Model") then return nil end
-    if obj == lp.Character then return nil end
-    if Players:GetPlayerFromCharacter(obj) then return nil end
-    
-    local name = string.lower(obj.Name)
-    
-    if name:find("taoist") then
-        return "Taoist", Color3.fromRGB(255, 165, 0)
-    end
-    
-    if name:find("maoshan") then
-        return "Maoshan", Color3.fromRGB(180, 0, 255)
-    end
-    
-    return nil
+    if not obj:IsA("Model") then return end
+    if obj == lp.Character then return end
+    if Players:GetPlayerFromCharacter(obj) then return end
+    local n = string.lower(obj.Name)
+    if n:find("taoist") then return "Taoist", Color3.fromRGB(255, 165, 0) end
+    if n:find("maoshan") then return "Maoshan", Color3.fromRGB(180, 0, 255) end
 end
 
 task.spawn(function()
@@ -949,12 +703,11 @@ task.spawn(function()
         if getgenv().ESP_Taoist or getgenv().ESP_Maoshan then
             for _, obj in ipairs(workspace:GetDescendants()) do
                 if obj:IsA("Model") then
-                    local npcType, color = GetNPCType(obj)
-                    
-                    if npcType == "Taoist" and getgenv().ESP_Taoist then
-                        CreateESP(obj, npcType, color)
-                    elseif npcType == "Maoshan" and getgenv().ESP_Maoshan then
-                        CreateESP(obj, npcType, color)
+                    local typ, color = GetNPCType(obj)
+                    if typ == "Taoist" and getgenv().ESP_Taoist then
+                        CreateESP(obj, typ, color)
+                    elseif typ == "Maoshan" and getgenv().ESP_Maoshan then
+                        CreateESP(obj, typ, color)
                     end
                 end
             end
@@ -962,93 +715,73 @@ task.spawn(function()
     end
 end)
 
---========================================================
--- ESP PLAYER SYSTEM
---========================================================
-
-local function CreatePlayerESP(player)
-    if not player or player == lp then return end
-    if getgenv().ESPPlayerList[player] then return end
-    
-    local char = player.Character
+-- esp player
+local function CreatePlayerESP(plr)
+    if not plr or plr == lp then return end
+    if getgenv().ESPPlayerList[plr] then return end
+    local char = plr.Character
     if not char then return end
-    
     local hrp = char:FindFirstChild("HumanoidRootPart")
     if not hrp then return end
-    
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "Player_ESP"
-    billboard.Size = UDim2.fromOffset(200, 30)
-    billboard.StudsOffset = Vector3.new(0, 3.5, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Adornee = hrp
-    billboard.Parent = char
-    
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Size = UDim2.new(1, 0, 1, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = player.Name
-    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    nameLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-    nameLabel.TextStrokeTransparency = 0
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.TextSize = 16
-    nameLabel.Parent = billboard
-    
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "Player_Highlight"
-    highlight.Adornee = char
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-    highlight.OutlineTransparency = 0.3
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = char
-    
-    getgenv().ESPPlayerList[player] = {
-        billboard = billboard,
-        highlight = highlight
-    }
+
+    local bill = Instance.new("BillboardGui")
+    bill.Size = UDim2.fromOffset(200, 30)
+    bill.StudsOffset = Vector3.new(0, 3.5, 0)
+    bill.AlwaysOnTop = true
+    bill.Adornee = hrp
+    bill.Parent = char
+
+    local lbl = Instance.new("TextLabel")
+    lbl.Size = UDim2.new(1, 0, 1, 0)
+    lbl.BackgroundTransparency = 1
+    lbl.Text = plr.Name
+    lbl.TextColor3 = Color3.fromRGB(255, 255, 255)
+    lbl.TextStrokeTransparency = 0
+    lbl.Font = Enum.Font.GothamBold
+    lbl.TextSize = 16
+    lbl.Parent = bill
+
+    local hl = Instance.new("Highlight")
+    hl.Adornee = char
+    hl.FillTransparency = 1
+    hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+    hl.OutlineTransparency = 0.3
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = char
+
+    getgenv().ESPPlayerList[plr] = {billboard = bill, highlight = hl}
 end
 
-local function RemovePlayerESP(player)
-    if getgenv().ESPPlayerList[player] then
-        local data = getgenv().ESPPlayerList[player]
+local function RemovePlayerESP(plr)
+    local data = getgenv().ESPPlayerList[plr]
+    if data then
         if data.billboard then data.billboard:Destroy() end
         if data.highlight then data.highlight:Destroy() end
-        getgenv().ESPPlayerList[player] = nil
+        getgenv().ESPPlayerList[plr] = nil
     end
 end
 
-Players.PlayerAdded:Connect(function(player)
+Players.PlayerAdded:Connect(function(plr)
     if getgenv().ESP_Player then
-        player.CharacterAdded:Connect(function()
+        plr.CharacterAdded:Connect(function()
             task.wait(1)
-            if getgenv().ESP_Player then
-                CreatePlayerESP(player)
-            end
+            if getgenv().ESP_Player then CreatePlayerESP(plr) end
         end)
     end
 end)
 
-Players.PlayerRemoving:Connect(function(player)
-    RemovePlayerESP(player)
-end)
+Players.PlayerRemoving:Connect(RemovePlayerESP)
 
 task.spawn(function()
     while task.wait(1) do
         if getgenv().ESP_Player then
-            for _, player in ipairs(Players:GetPlayers()) do
-                if player ~= lp then
-                    CreatePlayerESP(player)
-                end
+            for _, plr in ipairs(Players:GetPlayers()) do
+                if plr ~= lp then CreatePlayerESP(plr) end
             end
         else
-            for player, _ in pairs(getgenv().ESPPlayerList) do
-                RemovePlayerESP(player)
+            for plr in pairs(getgenv().ESPPlayerList) do
+                RemovePlayerESP(plr)
             end
         end
     end
 end)
-
-print("BeoHub Fishing Part 3/3 loaded!")
-print("BeoHub Fishing v5.5 WINDUI READY")
