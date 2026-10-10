@@ -111,7 +111,7 @@ TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Just add 2 more teleportabl
 TabUpdate:Paragraph({ Title = "Update", Desc = "10/08/2026" })
 TabUpdate:Paragraph({
     Title = "New",
-    Desc = "1. Auto Cast\n2. Walk on Water\n3. Anti Admin\n4. Auto Sell\n5. ESP\n6. Anti AFK"
+    Desc = "1.Oh, nothing new."
 })
 TabUpdate:Paragraph({
     Title = "Anti Admin",
