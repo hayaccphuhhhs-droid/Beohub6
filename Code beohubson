@@ -619,14 +619,14 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
--- anti afk (nhan space)
+-- anti afk
 task.spawn(function()
-    while task.wait(60) do
+    while task.wait(50) do
         if getgenv().AntiAFK then
             pcall(function()
-                VIM:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-                task.wait(0.05)
-                VIM:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                local VirtualUser = game:GetService("VirtualUser")
+                VirtualUser:CaptureController()
+                VirtualUser:ClickButton2(Vector2.new(0, 0))
             end)
         end
     end
