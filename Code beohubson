@@ -596,7 +596,7 @@ task.spawn(function()
             if (fishingUI and fishingUI.Visible) or fishing then
                 hum.WalkSpeed = getgenv().FishingSpeed or 0
             else
-                if not getgenv().PP_Noclip then
+                if not getgenv().Beo_Noclip then
                     hum.WalkSpeed = getgenv().NormalSpeed or 46
                 end
             end
