@@ -38,6 +38,7 @@ getgenv().AntiAFK = false
 getgenv().AutoSpeedControl = true
 getgenv().NormalSpeed = 46
 getgenv().FishingSpeed = 0
+getgenv().Beo_FishBtn = false
 getgenv().ESPList = {}
 getgenv().ESPPlayerList = {}
 
@@ -150,6 +151,17 @@ TabFishing:Toggle({
     Callback = function(v) getgenv().Beo_HoldBar = v end
 })
 
+TabFishing:Toggle({
+    Title = "Nut Cau Ao",
+    Default = false,
+    Callback = function(v)
+        getgenv().Beo_FishBtn = v
+        if getgenv().BeoFishButton then
+            getgenv().BeoFishButton.Visible = v
+        end
+    end
+})
+
 TabFishing:Button({
     Title = "Sell All",
     Callback = function()
@@ -216,7 +228,7 @@ tp("Frost Isle", -1366, 9, -1496)
 tp("Coconut Isle", 1493, 6, -1431)
 tp("Amber Isle", 1259, 6, 1401)
 tp("Battlefield Isle", 1393, 6, 169)
-tp("Mist Peak Isle", 2660, 6, -87)
+tp("MistPeak Isle", 2660, 6, -87)
 tp("World Angler Isle", -2417, 7, -204)
 tp("Weather Isle", -2911, 6, 1212)
 tp("Mystick Reef Isle", -2657, 6, -1303)
@@ -795,4 +807,56 @@ task.spawn(function()
             end
         end
     end
+end)
+
+-- fake fishing
+pcall(function()
+    for _,v in pairs(game.CoreGui:GetChildren()) do
+        if v.Name == "BeoFishBtn" then v:Destroy() end
+    end
+    for _,v in pairs(lp.PlayerGui:GetChildren()) do
+        if v.Name == "BeoFishBtn" then v:Destroy() end
+    end
+end)
+
+local fishGui = Instance.new("ScreenGui")
+fishGui.Name = "BeoFishBtn"
+fishGui.ResetOnSpawn = false
+pcall(function() fishGui.Parent = game.CoreGui end)
+if not fishGui.Parent then fishGui.Parent = lp:WaitForChild("PlayerGui") end
+
+local fishBtn = Instance.new("TextButton", fishGui)
+fishBtn.Size = UDim2.new(0, 90, 0, 90)
+fishBtn.Position = UDim2.new(0.84, 0, 0.42, 0)
+fishBtn.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
+fishBtn.Text = "fishing"
+fishBtn.TextColor3 = Color3.fromRGB(25, 25, 25)
+fishBtn.Font = Enum.Font.GothamBold
+fishBtn.TextSize = 18
+fishBtn.BorderSizePixel = 0
+fishBtn.AutoButtonColor = false
+fishBtn.Visible = false
+Instance.new("UICorner", fishBtn).CornerRadius = UDim.new(1, 0)
+
+local fishStroke = Instance.new("UIStroke", fishBtn)
+fishStroke.Thickness = 2
+fishStroke.Color = Color3.fromRGB(220, 220, 220)
+
+getgenv().BeoFishButton = fishBtn
+
+local fishCd = false
+fishBtn.MouseButton1Click:Connect(function()
+    if fishCd then return end
+    fishCd = true
+    pcall(function()
+        if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Fishing") then
+            RS.Events.Fishing:FireServer()
+        elseif RS:FindFirstChild("Fishing") then
+            RS.Fishing:FireServer()
+        end
+    end)
+    fishBtn.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
+    task.wait(0.08)
+    fishBtn.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
+    fishCd = false
 end)
