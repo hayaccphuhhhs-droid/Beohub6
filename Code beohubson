@@ -372,7 +372,7 @@ TabCharacter:Section({ Title = "Character" })
 TabCharacter:Toggle({
     Title = "Noclip",
     Default = false,
-    Callback = function(v) getgenv().PP_Noclip = v end
+    Callback = function(v) getgenv().Beo_Noclip = v end
 })
 
 local WaterParts = {}
@@ -507,16 +507,16 @@ task.spawn(function()
             local hum = char:FindFirstChildOfClass("Humanoid")
             if not hum or hum.Health <= 0 then return end
 
-            if getgenv().PP_AutoSkillAll then
+            if getgenv().Beo_AutoSkillAll then
                 useSkill("Z") task.wait(0.15)
                 useSkill("X") task.wait(0.15)
                 useSkill("C") task.wait(0.15)
                 useSkill("V")
             else
-                if getgenv().PP_Skill_Z then useSkill("Z") task.wait(0.15) end
-                if getgenv().PP_Skill_X then useSkill("X") task.wait(0.15) end
-                if getgenv().PP_Skill_C then useSkill("C") task.wait(0.15) end
-                if getgenv().PP_Skill_V then useSkill("V") end
+                if getgenv().Beo_Skill_Z then useSkill("Z") task.wait(0.15) end
+                if getgenv().Beo_Skill_X then useSkill("X") task.wait(0.15) end
+                if getgenv().Beo_Skill_C then useSkill("C") task.wait(0.15) end
+                if getgenv().Beo_Skill_V then useSkill("V") end
             end
         end)
     end
@@ -609,7 +609,7 @@ RunService.Stepped:Connect(function()
     pcall(function()
         local char = lp.Character
         if not char then return end
-        if getgenv().PP_Noclip then
+        if getgenv().Beo_Noclip then
             for _, p in ipairs(char:GetDescendants()) do
                 if p:IsA("BasePart") then
                     p.CanCollide = false
