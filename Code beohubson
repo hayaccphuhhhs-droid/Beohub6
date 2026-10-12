@@ -152,7 +152,7 @@ TabFishing:Toggle({
 })
 
 TabFishing:Toggle({
-    Title = "Nut Cau Ao",
+    Title = "fake fishing",
     Default = false,
     Callback = function(v)
         getgenv().Beo_FishBtn = v
