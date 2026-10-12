@@ -20,13 +20,13 @@ end
 getgenv().SafeAutoSell = false
 getgenv().SafeSellInterval = 5
 getgenv().Beo_HoldBar = false
-getgenv().PP_Noclip = false
-getgenv().PP_WalkSpeed = 46
-getgenv().PP_AutoSkillAll = false
-getgenv().PP_Skill_Z = false
-getgenv().PP_Skill_X = false
-getgenv().PP_Skill_C = false
-getgenv().PP_Skill_V = false
+getgenv().Beo_Noclip = false
+getgenv().Beo_WalkSpeed = 46
+getgenv().Beo_AutoSkillAll = false
+getgenv().Beo_Skill_Z = false
+getgenv().Beo_Skill_X = false
+getgenv().Beo_Skill_C = false
+getgenv().Beo_Skill_V = false
 getgenv().WalkOnWater = false
 getgenv().AutoCast = false
 getgenv().AntiAdminEnabled = true
@@ -58,8 +58,8 @@ end
 local function DisableAll()
     getgenv().SafeAutoSell = false
     getgenv().Beo_HoldBar = false
-    getgenv().PP_Noclip = false
-    getgenv().PP_AutoSkillAll = false
+    getgenv().Beo_Noclip = false
+    getgenv().Beo_AutoSkillAll = false
     getgenv().WalkOnWater = false
     getgenv().AutoCast = false
     getgenv().ESP_Taoist = false
@@ -109,7 +109,7 @@ local TabCharacter = Window:Tab({ Title = "Character", Icon = "user" })
 
 TabUpdate:Section({ Title = "Info" })
 TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Just add 2 more teleportable islands. " })
-TabUpdate:Paragraph({ Title = "Update", Desc = "10/08/2026" })
+TabUpdate:Paragraph({ Title = "Update", Desc = "12/08/2026" })
 TabUpdate:Paragraph({
     Title = "New",
     Desc = "1.Oh, nothing new."
@@ -122,7 +122,7 @@ TabUpdate:Button({
     Title = "No fucking thing here",
     Callback = function()
         pcall(function()
-            loadstring(game:HttpGet("https://bombaus-auth.phu-tho-vn.workers.dev/raw/khfresh-hub.lua"))()
+            "here"
         end)
     end
 })
@@ -178,31 +178,31 @@ TabFishing:Section({ Title = "Skills" })
 TabFishing:Toggle({
     Title = "All Skills",
     Default = false,
-    Callback = function(v) getgenv().PP_AutoSkillAll = v end
+    Callback = function(v) getgenv().Beo_AutoSkillAll = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill Z",
     Default = false,
-    Callback = function(v) getgenv().PP_Skill_Z = v end
+    Callback = function(v) getgenv().Beo_Skill_Z = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill X",
     Default = false,
-    Callback = function(v) getgenv().PP_Skill_X = v end
+    Callback = function(v) getgenv().Beo_Skill_X = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill C",
     Default = false,
-    Callback = function(v) getgenv().PP_Skill_C = v end
+    Callback = function(v) getgenv().Beo_Skill_C = v end
 })
 
 TabFishing:Toggle({
     Title = "Skill V",
     Default = false,
-    Callback = function(v) getgenv().PP_Skill_V = v end
+    Callback = function(v) getgenv().Beo_Skill_V = v end
 })
 
 TabTeleport:Section({ Title = "Islands" })
