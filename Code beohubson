@@ -7,25 +7,27 @@ local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 
-if game.PlaceId \~= 98502499119821 then
-    StarterGui:SetCore("SendNotification", {
-        Title = "WRONG GAME",
-        Text = "This script is only for Heavyweight Fishing!",
-        Duration = 5
-    })
+if game.PlaceId ~= 98502499119821 then
+    pcall(function()
+        StarterGui:SetCore("SendNotification", {
+            Title = "WRONG GAME",
+            Text = "This script is only for Heavyweight Fishing!",
+            Duration = 5
+        })
+    end)
     return
 end
 
 getgenv().SafeAutoSell = false
 getgenv().SafeSellInterval = 5
 getgenv().Beo_HoldBar = false
-getgenv().Beo_Noclip = false
-getgenv().Beo_WalkSpeed = 46
-getgenv().Beo_AutoSkillAll = false
-getgenv().Beo_Skill_Z = false
-getgenv().Beo_Skill_X = false
-getgenv().Beo_Skill_C = false
-getgenv().Beo_Skill_V = false
+getgenv().PP_Noclip = false
+getgenv().PP_WalkSpeed = 46
+getgenv().PP_AutoSkillAll = false
+getgenv().PP_Skill_Z = false
+getgenv().PP_Skill_X = false
+getgenv().PP_Skill_C = false
+getgenv().PP_Skill_V = false
 getgenv().WalkOnWater = false
 getgenv().AutoCast = false
 getgenv().AntiAdminEnabled = true
@@ -34,13 +36,13 @@ getgenv().ESP_Taoist = false
 getgenv().ESP_Maoshan = false
 getgenv().ESP_Player = false
 getgenv().AntiAFK = false
-getgenv().AntiAFK_Auto = true
 getgenv().AutoSpeedControl = true
 getgenv().NormalSpeed = 46
 getgenv().FishingSpeed = 0
 getgenv().Beo_FishBtn = false
 getgenv().ESPList = {}
 getgenv().ESPPlayerList = {}
+getgenv().BeoFishButton = nil
 
 local AdminList = {"tom_iceren", "ctgthecreator"}
 
@@ -58,8 +60,8 @@ end
 local function DisableAll()
     getgenv().SafeAutoSell = false
     getgenv().Beo_HoldBar = false
-    getgenv().Beo_Noclip = false
-    getgenv().Beo_AutoSkillAll = false
+    getgenv().PP_Noclip = false
+    getgenv().PP_AutoSkillAll = false
     getgenv().WalkOnWater = false
     getgenv().AutoCast = false
     getgenv().ESP_Taoist = false
@@ -74,11 +76,13 @@ task.spawn(function()
             if CheckAdmin() and not getgenv().AdminInServer then
                 getgenv().AdminInServer = true
                 DisableAll()
-                StarterGui:SetCore("SendNotification", {
-                    Title = "ADMIN",
-                    Text = "Script disabled",
-                    Duration = 5
-                })
+                pcall(function()
+                    StarterGui:SetCore("SendNotification", {
+                        Title = "ADMIN",
+                        Text = "Script disabled",
+                        Duration = 5
+                    })
+                end)
             elseif not CheckAdmin() and getgenv().AdminInServer then
                 getgenv().AdminInServer = false
             end
@@ -86,11 +90,18 @@ task.spawn(function()
     end
 end)
 
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local WindUI
+local ok, err = pcall(function()
+    WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+end)
+if not ok or not WindUI then
+    warn("[BeoHub] Không load được WindUI: " .. tostring(err))
+    return
+end
 
 local Window = WindUI:CreateWindow({
     Title = "BeoHub v5.6",
-    Icon = "fish",
+    Icon = "anchor",
     Author = "by ishowdiddy",
     Folder = "BeoHub_Fishing",
     Size = UDim2.fromOffset(520, 480),
@@ -108,18 +119,43 @@ local TabJoin = Window:Tab({ Title = "Join Server", Icon = "log-in" })
 local TabCharacter = Window:Tab({ Title = "Character", Icon = "user" })
 
 TabUpdate:Section({ Title = "Info" })
-TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Just add 2 more teleportable islands." })
-TabUpdate:Paragraph({ Title = "Update", Desc = "12/08/2026" })
-TabUpdate:Paragraph({ Title = "New", Desc = "1.Oh, nothing new." })
-TabUpdate:Paragraph({
-    Title = "Anti Admin",
-    Desc = "Detect: tom_iceren, ctgthecreator\nAdmin join = disable script"
+pcall(function()
+    TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Just add 2 more teleportable islands." })
+    TabUpdate:Paragraph({ Title = "Update", Desc = "10/08/2026" })
+    TabUpdate:Paragraph({ Title = "New", Desc = "1.Oh, nothing new." })
+    TabUpdate:Paragraph({
+        Title = "Anti Admin",
+        Desc = "Detect: tom_iceren, ctgthecreator\nAdmin join = disable script"
+    })
+    TabUpdate:Paragraph({ Title = "🥀", Desc = "same here" })
+end)
+
+TabUpdate:Button({
+    Title = "No fucking thing here",
+    Callback = function()
+    end
 })
 
 TabFishing:Section({ Title = "Auto Fishing" })
-TabFishing:Toggle({ Title = "Auto Cast", Default = false, Callback = function(v) getgenv().AutoCast = v end })
-TabFishing:Toggle({ Title = "Auto Sell", Default = false, Callback = function(v) getgenv().SafeAutoSell = v end })
-TabFishing:Toggle({ Title = "Hold Bar", Default = false, Callback = function(v) getgenv().Beo_HoldBar = v end })
+
+TabFishing:Toggle({
+    Title = "Auto Cast",
+    Default = false,
+    Callback = function(v) getgenv().AutoCast = v end
+})
+
+TabFishing:Toggle({
+    Title = "Auto Sell",
+    Default = false,
+    Callback = function(v) getgenv().SafeAutoSell = v end
+})
+
+TabFishing:Toggle({
+    Title = "Hold Bar",
+    Default = false,
+    Callback = function(v) getgenv().Beo_HoldBar = v end
+})
+
 TabFishing:Toggle({
     Title = "fake fishing",
     Default = false,
@@ -130,6 +166,7 @@ TabFishing:Toggle({
         end
     end
 })
+
 TabFishing:Button({
     Title = "Sell All",
     Callback = function()
@@ -142,13 +179,15 @@ TabFishing:Button({
 })
 
 TabFishing:Section({ Title = "Skills" })
-TabFishing:Toggle({ Title = "All Skills", Default = false, Callback = function(v) getgenv().Beo_AutoSkillAll = v end })
-TabFishing:Toggle({ Title = "Skill Z", Default = false, Callback = function(v) getgenv().Beo_Skill_Z = v end })
-TabFishing:Toggle({ Title = "Skill X", Default = false, Callback = function(v) getgenv().Beo_Skill_X = v end })
-TabFishing:Toggle({ Title = "Skill C", Default = false, Callback = function(v) getgenv().Beo_Skill_C = v end })
-TabFishing:Toggle({ Title = "Skill V", Default = false, Callback = function(v) getgenv().Beo_Skill_V = v end })
+
+TabFishing:Toggle({ Title = "All Skills", Default = false, Callback = function(v) getgenv().PP_AutoSkillAll = v end })
+TabFishing:Toggle({ Title = "Skill Z", Default = false, Callback = function(v) getgenv().PP_Skill_Z = v end })
+TabFishing:Toggle({ Title = "Skill X", Default = false, Callback = function(v) getgenv().PP_Skill_X = v end })
+TabFishing:Toggle({ Title = "Skill C", Default = false, Callback = function(v) getgenv().PP_Skill_C = v end })
+TabFishing:Toggle({ Title = "Skill V", Default = false, Callback = function(v) getgenv().PP_Skill_V = v end })
 
 TabTeleport:Section({ Title = "Islands" })
+
 local function tp(name, x, y, z)
     TabTeleport:Button({
         Title = name,
@@ -160,6 +199,7 @@ local function tp(name, x, y, z)
         end
     })
 end
+
 tp("Beginning Isle", -201, 6, 35)
 tp("Bamboo Isle", -1223, 6, -25)
 tp("Fallout Isle", 65, 6, 1181)
@@ -169,12 +209,13 @@ tp("Frost Isle", -1366, 9, -1496)
 tp("Coconut Isle", 1493, 6, -1431)
 tp("Amber Isle", 1259, 6, 1401)
 tp("Battlefield Isle", 1393, 6, 169)
-tp("Mist Peak Isle", 2660, 6, -87)
+tp("MistPeak Isle", 2660, 6, -87)
 tp("World Angler Isle", -2417, 7, -204)
 tp("Weather Isle", -2911, 6, 1212)
 tp("Mystick Reef Isle", -2657, 6, -1303)
 
 TabESP:Section({ Title = "NPC ESP" })
+
 TabESP:Toggle({
     Title = "ESP Taoist",
     Default = false,
@@ -192,6 +233,7 @@ TabESP:Toggle({
         end
     end
 })
+
 TabESP:Toggle({
     Title = "ESP Maoshan",
     Default = false,
@@ -209,6 +251,7 @@ TabESP:Toggle({
         end
     end
 })
+
 TabESP:Toggle({
     Title = "ESP Player",
     Default = false,
@@ -223,6 +266,7 @@ TabESP:Toggle({
         end
     end
 })
+
 TabESP:Button({
     Title = "Clear ESP",
     Callback = function()
@@ -241,35 +285,47 @@ TabESP:Button({
 })
 
 TabJoin:Section({ Title = "Server" })
+
 local jobId = ""
-TabJoin:Input({ Title = "Job ID", Placeholder = "Enter job id...", Callback = function(v) jobId = v end })
+
+TabJoin:Input({
+    Title = "Job ID",
+    Placeholder = "Enter job id...",
+    Callback = function(v) jobId = v end
+})
+
 TabJoin:Button({
     Title = "Join",
     Callback = function()
-        if jobId \~= "" then
+        if jobId ~= "" then
             pcall(function()
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, lp)
             end)
         end
     end
 })
+
 TabJoin:Button({
     Title = "Copy Job ID",
     Callback = function()
-        if game.JobId \~= "" then setclipboard(game.JobId) end
+        if game.JobId ~= "" then
+            setclipboard(game.JobId)
+        end
     end
 })
+
 TabJoin:Button({
     Title = "Join Clipboard",
     Callback = function()
         local clip = getclipboard()
-        if clip and clip \~= "" then
+        if clip and clip ~= "" then
             pcall(function()
                 TeleportService:TeleportToPlaceInstance(game.PlaceId, clip, lp)
             end)
         end
     end
 })
+
 TabJoin:Button({
     Title = "Join Low Player Server",
     Callback = function()
@@ -279,7 +335,7 @@ TabJoin:Button({
             local best, minP = nil, 999
             if data and data.data then
                 for _, s in ipairs(data.data) do
-                    if s.playing < minP and s.playing > 0 and s.id \~= game.JobId then
+                    if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
                         minP = s.playing
                         best = s.id
                     end
@@ -293,10 +349,22 @@ TabJoin:Button({
 })
 
 TabCharacter:Section({ Title = "Character" })
-TabCharacter:Toggle({ Title = "Noclip", Default = false, Callback = function(v) getgenv().Beo_Noclip = v end })
+
+TabCharacter:Toggle({
+    Title = "Noclip",
+    Default = false,
+    Callback = function(v) getgenv().PP_Noclip = v end
+})
+
+TabCharacter:Toggle({
+    Title = "Auto Speed Control",
+    Default = true,
+    Callback = function(v) getgenv().AutoSpeedControl = v end
+})
 
 local WaterParts = {}
 local OriginalWater = {}
+
 local function FindWater()
     WaterParts = {}
     for _, obj in pairs(workspace:GetDescendants()) do
@@ -305,6 +373,7 @@ local function FindWater()
         end
     end
 end
+
 local function EnableWater()
     FindWater()
     for _, w in ipairs(WaterParts) do
@@ -312,9 +381,12 @@ local function EnableWater()
         w.CanCollide = true
     end
 end
+
 local function DisableWater()
     for w, old in pairs(OriginalWater) do
-        if w and w.Parent then w.CanCollide = old end
+        if w and w.Parent then
+            w.CanCollide = old
+        end
     end
     OriginalWater = {}
 end
@@ -327,7 +399,13 @@ TabCharacter:Toggle({
         if v then EnableWater() else DisableWater() end
     end
 })
-TabCharacter:Toggle({ Title = "Anti AFK", Default = false, Callback = function(v) getgenv().AntiAFK = v end })
+
+TabCharacter:Toggle({
+    Title = "Anti AFK",
+    Default = false,
+    Callback = function(v) getgenv().AntiAFK = v end
+})
+
 TabCharacter:Button({
     Title = "Fix Lag",
     Callback = function()
@@ -336,6 +414,7 @@ TabCharacter:Button({
         end)
     end
 })
+
 TabCharacter:Button({
     Title = "Copy Coordinates",
     Callback = function()
@@ -348,7 +427,12 @@ TabCharacter:Button({
 })
 
 local multiCode = ""
-TabCharacter:Input({ Title = "Codes", Placeholder = "One code per line", Callback = function(v) multiCode = v end })
+TabCharacter:Input({
+    Title = "Codes",
+    Placeholder = "One code per line",
+    Callback = function(v) multiCode = v end
+})
+
 TabCharacter:Button({
     Title = "Redeem Codes",
     Callback = function()
@@ -365,12 +449,6 @@ TabCharacter:Button({
         end
     end
 })
-local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local lp = Players.LocalPlayer
-
 local PossibleRemotes = {
     "UseSkill", "CastSkill", "Skill", "ActivateSkill",
     "PlaySkill", "SkillActivate", "DoSkill"
@@ -412,16 +490,17 @@ task.spawn(function()
             if not char then return end
             local hum = char:FindFirstChildOfClass("Humanoid")
             if not hum or hum.Health <= 0 then return end
-            if getgenv().Beo_AutoSkillAll then
+
+            if getgenv().PP_AutoSkillAll then
                 useSkill("Z") task.wait(0.15)
                 useSkill("X") task.wait(0.15)
                 useSkill("C") task.wait(0.15)
                 useSkill("V")
             else
-                if getgenv().Beo_Skill_Z then useSkill("Z") task.wait(0.15) end
-                if getgenv().Beo_Skill_X then useSkill("X") task.wait(0.15) end
-                if getgenv().Beo_Skill_C then useSkill("C") task.wait(0.15) end
-                if getgenv().Beo_Skill_V then useSkill("V") end
+                if getgenv().PP_Skill_Z then useSkill("Z") task.wait(0.15) end
+                if getgenv().PP_Skill_X then useSkill("X") task.wait(0.15) end
+                if getgenv().PP_Skill_C then useSkill("C") task.wait(0.15) end
+                if getgenv().PP_Skill_V then useSkill("V") end
             end
         end)
     end
@@ -460,6 +539,7 @@ task.spawn(function()
     end
 end)
 
+local lastHoldFire = 0
 RunService.RenderStepped:Connect(function()
     if not getgenv().Beo_HoldBar then return end
     pcall(function()
@@ -467,6 +547,7 @@ RunService.RenderStepped:Connect(function()
         if not gui then return end
         local fishingUI = gui:FindFirstChild("Fishing")
         if not fishingUI or not fishingUI.Visible then return end
+
         local barFrame = fishingUI:FindFirstChild("BarFrame")
         if barFrame then
             local bar = barFrame:FindFirstChild("Bar")
@@ -474,32 +555,37 @@ RunService.RenderStepped:Connect(function()
                 bar.Position = UDim2.new(0.5, 0, bar.Position.Y.Scale, 0)
             end
         end
-        if RS.Events and RS.Events:FindFirstChild("Fishing") then
-            RS.Events.Fishing:FireServer("1")
+
+        if tick() - lastHoldFire >= 0.1 then
+            lastHoldFire = tick()
+            if RS.Events and RS.Events:FindFirstChild("Fishing") then
+                RS.Events.Fishing:FireServer("1")
+            end
         end
     end)
 end)
 
 task.spawn(function()
     while task.wait(0.15) do
-        if getgenv().AutoSpeedControl then
-            pcall(function()
-                local char = lp.Character
-                if not char then return end
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                if not hum then return end
-                local gui = lp.PlayerGui:FindFirstChild("MainGui")
-                local fishingUI = gui and gui:FindFirstChild("Fishing")
-                local fishing = char:GetAttribute("Fishing")
-                if (fishingUI and fishingUI.Visible) or fishing then
-                    hum.WalkSpeed = getgenv().FishingSpeed or 0
-                else
-                    if not getgenv().Beo_Noclip then
-                        hum.WalkSpeed = getgenv().NormalSpeed or 46
-                    end
+        if not getgenv().AutoSpeedControl then continue end
+        pcall(function()
+            local char = lp.Character
+            if not char then return end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            if not hum then return end
+
+            local gui = lp.PlayerGui:FindFirstChild("MainGui")
+            local fishingUI = gui and gui:FindFirstChild("Fishing")
+            local fishing = char:GetAttribute("Fishing")
+
+            if (fishingUI and fishingUI.Visible) or fishing then
+                hum.WalkSpeed = getgenv().FishingSpeed or 0
+            else
+                if not getgenv().PP_Noclip then
+                    hum.WalkSpeed = getgenv().NormalSpeed or 46
                 end
-            end)
-        end
+            end
+        end)
     end
 end)
 
@@ -507,7 +593,7 @@ RunService.Stepped:Connect(function()
     pcall(function()
         local char = lp.Character
         if not char then return end
-        if getgenv().Beo_Noclip then
+        if getgenv().PP_Noclip then
             for _, p in ipairs(char:GetDescendants()) do
                 if p:IsA("BasePart") then
                     p.CanCollide = false
@@ -517,43 +603,51 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
+getgenv().AntiAFK = getgenv().AntiAFK or false
+getgenv().AntiAFK_Auto = true
+
 local lastPos = nil
 local stillSince = os.clock()
 
 local function notifyAFK(title, content)
     pcall(function()
-        if WindUI and WindUI.Notify then
-            WindUI:Notify({ Title = title, Content = content, Duration = 3 })
+        if Window and Window.Notify then
+            Window:Notify({
+                Title = title,
+                Content = content,
+                Duration = 3,
+            })
         end
     end)
 end
 
 task.spawn(function()
     while task.wait(0.5) do
-        if getgenv().AntiAFK_Auto then
-            pcall(function()
-                local char = lp.Character
-                local hrp = char and char:FindFirstChild("HumanoidRootPart")
-                if not hrp then return end
-                local pos = hrp.Position
-                if lastPos then
-                    local dist = (pos - lastPos).Magnitude
-                    if dist > 1.5 then
-                        stillSince = os.clock()
-                        if getgenv().AntiAFK then
-                            getgenv().AntiAFK = false
-                            notifyAFK("Anti AFK", "Moving - Anti AFK OFF")
-                        end
-                    else
-                        if not getgenv().AntiAFK and (os.clock() - stillSince) >= 30 then
-                            getgenv().AntiAFK = true
-                            notifyAFK("Anti AFK", "Idle 30s - Anti AFK ON")
-                        end
+        if not getgenv().AntiAFK_Auto then continue end
+
+        pcall(function()
+            local char = lp.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if not hrp then return end
+
+            local pos = hrp.Position
+            if lastPos then
+                local dist = (pos - lastPos).Magnitude
+                if dist > 1.5 then
+                    stillSince = os.clock()
+                    if getgenv().AntiAFK then
+                        getgenv().AntiAFK = false
+                        notifyAFK("Anti AFK", "Moving - Anti AFK OFF")
+                    end
+                else
+                    if not getgenv().AntiAFK and (os.clock() - stillSince) >= 30 then
+                        getgenv().AntiAFK = true
+                        notifyAFK("Anti AFK", "Idle 30s - Anti AFK ON")
                     end
                 end
-                lastPos = pos
-            end)
-        end
+            end
+            lastPos = pos
+        end)
     end
 end)
 
@@ -564,6 +658,7 @@ task.spawn(function()
                 local char = lp.Character
                 local hum = char and char:FindFirstChildOfClass("Humanoid")
                 if not hum then return end
+
                 for i = 1, 3 do
                     if not getgenv().AntiAFK then break end
                     hum.Jump = true
@@ -722,7 +817,7 @@ task.spawn(function()
     while task.wait(1) do
         if getgenv().ESP_Player then
             for _, plr in ipairs(Players:GetPlayers()) do
-                if plr \~= lp then CreatePlayerESP(plr) end
+                if plr ~= lp then CreatePlayerESP(plr) end
             end
         else
             for plr in pairs(getgenv().ESPPlayerList) do
@@ -765,6 +860,7 @@ fishStroke.Thickness = 2
 fishStroke.Color = Color3.fromRGB(220, 220, 220)
 
 getgenv().BeoFishButton = fishBtn
+fishBtn.Visible = getgenv().Beo_FishBtn
 
 local fishCd = false
 fishBtn.MouseButton1Click:Connect(function()
