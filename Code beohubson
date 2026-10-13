@@ -449,37 +449,11 @@ TabCharacter:Button({
         end
     end
 })
-local PossibleRemotes = {
-    "UseSkill", "CastSkill", "Skill", "ActivateSkill",
-    "PlaySkill", "SkillActivate", "DoSkill"
-}
-
-local function findSkillRemote()
-    local events = RS:FindFirstChild("Events") or RS
-    for _, name in ipairs(PossibleRemotes) do
-        local r = events:FindFirstChild(name, true)
-        if r and (r:IsA("RemoteEvent") or r:IsA("RemoteFunction")) then
-            return r
-        end
-    end
-    return nil
-end
-
-local skillRemote = findSkillRemote()
-
-local function useSkill(slot)
-    if skillRemote then
-        pcall(function()
-            skillRemote:FireServer(slot)
-            skillRemote:FireServer(slot:lower())
-            skillRemote:FireServer({Skill = slot})
-        end)
-        return
-    end
+local function pressKey(key)
     pcall(function()
-        VIM:SendKeyEvent(true, Enum.KeyCode[slot], false, game)
+        VIM:SendKeyEvent(true, key, false, game)
         task.wait(0.05)
-        VIM:SendKeyEvent(false, Enum.KeyCode[slot], false, game)
+        VIM:SendKeyEvent(false, key, false, game)
     end)
 end
 
@@ -492,15 +466,15 @@ task.spawn(function()
             if not hum or hum.Health <= 0 then return end
 
             if getgenv().PP_AutoSkillAll then
-                useSkill("Z") task.wait(0.15)
-                useSkill("X") task.wait(0.15)
-                useSkill("C") task.wait(0.15)
-                useSkill("V")
+                pressKey(Enum.KeyCode.Z) task.wait(0.15)
+                pressKey(Enum.KeyCode.X) task.wait(0.15)
+                pressKey(Enum.KeyCode.C) task.wait(0.15)
+                pressKey(Enum.KeyCode.V)
             else
-                if getgenv().PP_Skill_Z then useSkill("Z") task.wait(0.15) end
-                if getgenv().PP_Skill_X then useSkill("X") task.wait(0.15) end
-                if getgenv().PP_Skill_C then useSkill("C") task.wait(0.15) end
-                if getgenv().PP_Skill_V then useSkill("V") end
+                if getgenv().PP_Skill_Z then pressKey(Enum.KeyCode.Z) task.wait(0.15) end
+                if getgenv().PP_Skill_X then pressKey(Enum.KeyCode.X) task.wait(0.15) end
+                if getgenv().PP_Skill_C then pressKey(Enum.KeyCode.C) task.wait(0.15) end
+                if getgenv().PP_Skill_V then pressKey(Enum.KeyCode.V) end
             end
         end)
     end
