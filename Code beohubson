@@ -7,7 +7,7 @@ local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 
-if game.PlaceId \~= 98502499119821 then
+if game.PlaceId ~= 98502499119821 then
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = "WRONG GAME",
@@ -192,7 +192,6 @@ tp("MistPeak Isle", 2660, 6, -87)
 tp("World Angler Isle", -2417, 7, -204)
 tp("Weather Isle", -2911, 6, 1212)
 tp("Mystick Reef Isle", -2657, 6, -1303)
-
 TabESP:Section({ Title = "NPC ESP" })
 TabESP:Toggle({
     Title = "ESP Taoist", Default = false,
@@ -262,20 +261,20 @@ TabJoin:Input({ Title = "Job ID", Placeholder = "job id...", Callback = function
 TabJoin:Button({
     Title = "Join",
     Callback = function()
-        if jobId \~= "" then
+        if jobId ~= "" then
             pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, lp) end)
         end
     end
 })
 TabJoin:Button({
     Title = "Copy Job ID",
-    Callback = function() if game.JobId \~= "" then setclipboard(game.JobId) end end
+    Callback = function() if game.JobId ~= "" then setclipboard(game.JobId) end end
 })
 TabJoin:Button({
     Title = "Join Clipboard",
     Callback = function()
         local clip = getclipboard()
-        if clip and clip \~= "" then
+        if clip and clip ~= "" then
             pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, clip, lp) end)
         end
     end
@@ -289,7 +288,7 @@ TabJoin:Button({
             local best, minP = nil, 999
             if data and data.data then
                 for _, s in ipairs(data.data) do
-                    if s.playing < minP and s.playing > 0 and s.id \~= game.JobId then
+                    if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
                         minP = s.playing
                         best = s.id
                     end
@@ -370,12 +369,6 @@ TabCharacter:Button({
         end
     end
 })
-local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local lp = Players.LocalPlayer
-
 local PossibleRemotes = {
     "UseSkill", "CastSkill", "Skill", "ActivateSkill",
     "PlaySkill", "SkillActivate", "DoSkill"
@@ -516,11 +509,6 @@ RunService.Stepped:Connect(function()
         end
     end)
 end)
-local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local lp = Players.LocalPlayer
 local Events = RS:FindFirstChild("Events")
 
 local lastPos, stillSince = nil, os.clock()
@@ -693,7 +681,7 @@ task.spawn(function()
     while task.wait(1) do
         if getgenv().ESP_Player then
             for _, plr in ipairs(Players:GetPlayers()) do
-                if plr \~= lp then CreatePlayerESP(plr) end
+                if plr ~= lp then CreatePlayerESP(plr) end
             end
         else
             for plr in pairs(getgenv().ESPPlayerList) do RemovePlayerESP(plr) end
@@ -743,7 +731,6 @@ fishBtn.MouseButton1Click:Connect(function()
     fishCd = false
 end)
 
--- ===== AUTO MINIGAME (HIT MANH) =====
 local RhythmHitEvent = Events and Events:FindFirstChild("RhythmHit")
 local rhythmLanes = {"A", "S", "D"}
 local rhythmKeyMap = { A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D }
@@ -831,9 +818,7 @@ local function StepRhythm(ui)
             end
         end
     end
-end
-
-local function StepPhase2(ui)
+endlocal function StepPhase2(ui)
     local bossBar = ui:FindFirstChild("BossFightBar")
     if not bossBar or not bossBar.Visible then return end
     local bar = bossBar:FindFirstChild("Bar")
