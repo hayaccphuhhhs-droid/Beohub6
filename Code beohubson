@@ -7,7 +7,7 @@ local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local lp = Players.LocalPlayer
 
-if game.PlaceId ~= 98502499119821 then
+if game.PlaceId \~= 98502499119821 then
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = "WRONG GAME",
@@ -22,11 +22,7 @@ getgenv().SafeAutoSell = false
 getgenv().SafeSellInterval = 6
 getgenv().Beo_HoldBar = false
 getgenv().Beo_AutoMiniGame = false
-getgenv().Beo_AutoRhythm = false
-getgenv().Beo_AutoPhase2 = false
-getgenv().Beo_NaturalMiss = true
 getgenv().Beo_Noclip = false
-getgenv().Beo_WalkSpeed = 46
 getgenv().Beo_AutoSkillAll = false
 getgenv().Beo_Skill_Z = false
 getgenv().Beo_Skill_X = false
@@ -48,7 +44,6 @@ getgenv().Beo_FishBtn = false
 getgenv().ESPList = {}
 getgenv().ESPPlayerList = {}
 getgenv().BeoFishButton = nil
-getgenv().BeoWindow = nil
 
 local AdminList = {"tom_iceren", "ctgthecreator"}
 
@@ -65,8 +60,6 @@ local function DisableAll()
     getgenv().SafeAutoSell = false
     getgenv().Beo_HoldBar = false
     getgenv().Beo_AutoMiniGame = false
-    getgenv().Beo_AutoRhythm = false
-    getgenv().Beo_AutoPhase2 = false
     getgenv().Beo_Noclip = false
     getgenv().Beo_AutoSkillAll = false
     getgenv().WalkOnWater = false
@@ -128,7 +121,7 @@ local TabCharacter = Window:Tab({ Title = "Character", Icon = "user" })
 
 TabUpdate:Section({ Title = "Info" })
 pcall(function()
-    TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Safe cooldown + MiniGame" })
+    TabUpdate:Paragraph({ Title = "BeoHub v5.6", Desc = "Safe cooldown + MiniGame hit" })
     TabUpdate:Paragraph({ Title = "Update", Desc = "18/10/2026" })
     TabUpdate:Paragraph({ Title = "Anti Admin", Desc = "tom_iceren, ctgthecreator" })
 end)
@@ -163,12 +156,16 @@ TabFishing:Toggle({ Title = "Skill X", Default = false, Callback = function(v) g
 TabFishing:Toggle({ Title = "Skill C", Default = false, Callback = function(v) getgenv().Beo_Skill_C = v end })
 TabFishing:Toggle({ Title = "Skill V", Default = false, Callback = function(v) getgenv().Beo_Skill_V = v end })
 
-TabBoss:Section({ Title = "Auto Minigame" })
-TabBoss:Toggle({ Title = "Auto Rhythm", Default = false, Callback = function(v) getgenv().Beo_AutoRhythm = v end })
-TabBoss:Toggle({ Title = "Auto Phase 2 (Boss Bar)", Default = false, Callback = function(v) getgenv().Beo_AutoPhase2 = v end })
-TabBoss:Toggle({ Title = "Auto MiniGame (All)", Default = false, Callback = function(v) getgenv().Beo_AutoMiniGame = v end })
-TabBoss:Toggle({ Title = "Natural Miss (1-2/20-30 note)", Default = true, Callback = function(v) getgenv().Beo_NaturalMiss = v end })
-TabBoss:Paragraph({ Title = "Note", Desc = "Bật 'Auto MiniGame (All)' để auto cả rhythm + phase 2.\nHoặc bật riêng từng cái." })
+TabBoss:Section({ Title = "Minigame" })
+TabBoss:Toggle({
+    Title = "Auto MiniGame",
+    Default = false,
+    Callback = function(v) getgenv().Beo_AutoMiniGame = v end
+})
+TabBoss:Paragraph({
+    Title = "Note",
+    Desc = "Rhythm (A/S/D) + Boss Phase 2 bar.\nBật khi vào minigame / boss."
+})
 
 TabTeleport:Section({ Title = "Islands" })
 local function tp(name, x, y, z)
@@ -265,20 +262,20 @@ TabJoin:Input({ Title = "Job ID", Placeholder = "job id...", Callback = function
 TabJoin:Button({
     Title = "Join",
     Callback = function()
-        if jobId ~= "" then
+        if jobId \~= "" then
             pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, jobId, lp) end)
         end
     end
 })
 TabJoin:Button({
     Title = "Copy Job ID",
-    Callback = function() if game.JobId ~= "" then setclipboard(game.JobId) end end
+    Callback = function() if game.JobId \~= "" then setclipboard(game.JobId) end end
 })
 TabJoin:Button({
     Title = "Join Clipboard",
     Callback = function()
         local clip = getclipboard()
-        if clip and clip ~= "" then
+        if clip and clip \~= "" then
             pcall(function() TeleportService:TeleportToPlaceInstance(game.PlaceId, clip, lp) end)
         end
     end
@@ -292,7 +289,7 @@ TabJoin:Button({
             local best, minP = nil, 999
             if data and data.data then
                 for _, s in ipairs(data.data) do
-                    if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
+                    if s.playing < minP and s.playing > 0 and s.id \~= game.JobId then
                         minP = s.playing
                         best = s.id
                     end
@@ -373,11 +370,16 @@ TabCharacter:Button({
         end
     end
 })
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local VIM = game:GetService("VirtualInputManager")
+local lp = Players.LocalPlayer
+
 local PossibleRemotes = {
     "UseSkill", "CastSkill", "Skill", "ActivateSkill",
     "PlaySkill", "SkillActivate", "DoSkill"
 }
-
 local function findSkillRemote()
     local events = RS:FindFirstChild("Events") or RS
     for _, name in ipairs(PossibleRemotes) do
@@ -388,7 +390,6 @@ local function findSkillRemote()
     end
     return nil
 end
-
 local skillRemote = findSkillRemote()
 
 local function useSkill(slot)
@@ -413,10 +414,7 @@ task.spawn(function()
             if not hum or hum.Health <= 0 then return end
             local function gap() task.wait(0.22 + math.random() * 0.1) end
             if getgenv().Beo_AutoSkillAll then
-                useSkill("Z") gap()
-                useSkill("X") gap()
-                useSkill("C") gap()
-                useSkill("V")
+                useSkill("Z") gap() useSkill("X") gap() useSkill("C") gap() useSkill("V")
             else
                 if getgenv().Beo_Skill_Z then useSkill("Z") gap() end
                 if getgenv().Beo_Skill_X then useSkill("X") gap() end
@@ -478,8 +476,7 @@ RunService.RenderStepped:Connect(function()
                 bar.Position = UDim2.new(0.5, 0, bar.Position.Y.Scale, 0)
             end
         end
-        local cd = 0.18 + math.random() * 0.08
-        if tick() - lastHoldFire >= cd then
+        if tick() - lastHoldFire >= (0.18 + math.random() * 0.08) then
             lastHoldFire = tick()
             if RS.Events and RS.Events:FindFirstChild("Fishing") then
                 RS.Events.Fishing:FireServer("1")
@@ -501,10 +498,8 @@ task.spawn(function()
                 local fishing = char:GetAttribute("Fishing")
                 if (fishingUI and fishingUI.Visible) or fishing then
                     hum.WalkSpeed = getgenv().FishingSpeed or 0
-                else
-                    if not getgenv().Beo_Noclip then
-                        hum.WalkSpeed = getgenv().NormalSpeed or 46
-                    end
+                elseif not getgenv().Beo_Noclip then
+                    hum.WalkSpeed = getgenv().NormalSpeed or 46
                 end
             end)
         end
@@ -514,25 +509,25 @@ end)
 RunService.Stepped:Connect(function()
     pcall(function()
         local char = lp.Character
-        if not char then return end
-        if getgenv().Beo_Noclip then
+        if char and getgenv().Beo_Noclip then
             for _, p in ipairs(char:GetDescendants()) do
                 if p:IsA("BasePart") then p.CanCollide = false end
             end
         end
     end)
 end)
-
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local VIM = game:GetService("VirtualInputManager")
+local lp = Players.LocalPlayer
 local Events = RS:FindFirstChild("Events")
 
 local lastPos, stillSince = nil, os.clock()
-
 local function notifyAFK(title, content)
     pcall(function()
-        local W = getgenv().BeoWindow
-        if W and W.Notify then
-            W:Notify({ Title = title, Content = content, Duration = 3 })
-        end
+        local W = getgenv().BeoWindUI
+        if W and W.Notify then W:Notify({ Title = title, Content = content, Duration = 3 }) end
     end)
 end
 
@@ -551,11 +546,9 @@ task.spawn(function()
                             getgenv().AntiAFK = false
                             notifyAFK("Anti AFK", "Moving - OFF")
                         end
-                    else
-                        if not getgenv().AntiAFK and (os.clock() - stillSince) >= 30 then
-                            getgenv().AntiAFK = true
-                            notifyAFK("Anti AFK", "Idle 30s - ON")
-                        end
+                    elseif not getgenv().AntiAFK and (os.clock() - stillSince) >= 30 then
+                        getgenv().AntiAFK = true
+                        notifyAFK("Anti AFK", "Idle 30s - ON")
                     end
                 end
                 lastPos = pos
@@ -568,8 +561,7 @@ task.spawn(function()
     while task.wait(45) do
         if getgenv().AntiAFK then
             pcall(function()
-                local char = lp.Character
-                local hum = char and char:FindFirstChildOfClass("Humanoid")
+                local hum = lp.Character and lp.Character:FindFirstChildOfClass("Humanoid")
                 if not hum then return end
                 for i = 1, 2 do
                     if not getgenv().AntiAFK then break end
@@ -701,13 +693,14 @@ task.spawn(function()
     while task.wait(1) do
         if getgenv().ESP_Player then
             for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= lp then CreatePlayerESP(plr) end
+                if plr \~= lp then CreatePlayerESP(plr) end
             end
         else
             for plr in pairs(getgenv().ESPPlayerList) do RemovePlayerESP(plr) end
         end
     end
 end)
+
 pcall(function()
     for _, v in pairs(game.CoreGui:GetChildren()) do
         if v.Name == "BeoFishBtn" then v:Destroy() end
@@ -722,7 +715,6 @@ fishGui.Name = "BeoFishBtn"
 fishGui.ResetOnSpawn = false
 pcall(function() fishGui.Parent = game.CoreGui end)
 if not fishGui.Parent then fishGui.Parent = lp:WaitForChild("PlayerGui") end
-
 local fishBtn = Instance.new("TextButton", fishGui)
 fishBtn.Size = UDim2.new(0, 90, 0, 90)
 fishBtn.Position = UDim2.new(0.84, 0, 0.42, 0)
@@ -738,197 +730,150 @@ Instance.new("UICorner", fishBtn).CornerRadius = UDim.new(1, 0)
 Instance.new("UIStroke", fishBtn).Color = Color3.fromRGB(220, 220, 220)
 getgenv().BeoFishButton = fishBtn
 fishBtn.Visible = getgenv().Beo_FishBtn
-
 local fishCd = false
 fishBtn.MouseButton1Click:Connect(function()
     if fishCd then return end
     fishCd = true
     pcall(function()
-        if RS:FindFirstChild("Events") and RS.Events:FindFirstChild("Fishing") then
+        if RS.Events and RS.Events:FindFirstChild("Fishing") then
             RS.Events.Fishing:FireServer()
         end
     end)
-    fishBtn.BackgroundColor3 = Color3.fromRGB(230, 230, 230)
     task.wait(0.1)
-    fishBtn.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
     fishCd = false
 end)
 
-local Events = RS:FindFirstChild("Events")
-
+-- ===== AUTO MINIGAME (HIT MANH) =====
 local RhythmHitEvent = Events and Events:FindFirstChild("RhythmHit")
 local rhythmLanes = {"A", "S", "D"}
 local rhythmKeyMap = { A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D }
-local lastRhythmLaneHit = { A = 0, S = 0, D = 0 }
-local lastRhythmScan = 0
+local lastRhythmHit = { A = 0, S = 0, D = 0 }
 local lastPhase2Hit = 0
-local phase2History = {}
 
-local rhythmNoteCount = 0
-local rhythmMissQuota = 0
-local phase2NoteCount = 0
-local phase2MissQuota = 0
-
-local function resetMissQuota()
-    rhythmNoteCount = 0
-    rhythmMissQuota = math.random(1, 2)
-    phase2NoteCount = 0
-    phase2MissQuota = math.random(1, 2)
-end
-resetMissQuota()
-
-local function shouldMiss(kind)
-    if not getgenv().Beo_NaturalMiss then return false end
-    if kind == "rhythm" then
-        rhythmNoteCount = rhythmNoteCount + 1
-        if rhythmNoteCount >= math.random(20, 30) then
-            resetMissQuota()
-            return false
-        end
-        if rhythmMissQuota > 0 and math.random() < 0.15 then
-            rhythmMissQuota = rhythmMissQuota - 1
-            return true
-        end
-    else
-        phase2NoteCount = phase2NoteCount + 1
-        if phase2NoteCount >= math.random(20, 30) then
-            resetMissQuota()
-            return false
-        end
-        if phase2MissQuota > 0 and math.random() < 0.15 then
-            phase2MissQuota = phase2MissQuota - 1
-            return true
-        end
-    end
-    return false
-end
-
-local function getFishingGui()
+local function getFishingUI()
     local main = lp.PlayerGui:FindFirstChild("MainGui")
     return main and main:FindFirstChild("Fishing")
 end
 
-local function StepRhythm(fishingUI)
-    local rhythm = fishingUI:FindFirstChild("Rhythm")
-    if not rhythm or not rhythm.Visible then return end
-    local now = os.clock()
-    if now - lastRhythmScan < (0.12 + math.random() * 0.05) then return end
-    lastRhythmScan = now
-    if not RhythmHitEvent then
-        RhythmHitEvent = Events and Events:FindFirstChild("RhythmHit")
-    end
-    local hitThisFrame = false
-    for _, lane in ipairs(rhythmLanes) do
-        if hitThisFrame then break end
-        if now - (lastRhythmLaneHit[lane] or 0) >= (0.18 + math.random() * 0.08) then
-            local laneFrame = rhythm:FindFirstChild("Progression" .. lane)
-            if laneFrame then
-                local barFrame = laneFrame:FindFirstChild("BarFrame")
-                local targetY = barFrame and barFrame.Position.Y.Scale or 0.85
-                local bestDist, targetNote = 0.12, nil
-                for _, child in ipairs(laneFrame:GetChildren()) do
-                    if child.Name == "Note_FX" and child:IsA("GuiObject") and child.Visible then
-                        local dist = math.abs(child.Position.Y.Scale - targetY)
-                        if dist <= bestDist then
-                            bestDist = dist
-                            targetNote = child
+local function fireGuiButton(btn)
+    if not btn then return false end
+    local ok = false
+    if getconnections then
+        for _, sigName in ipairs({"MouseButton1Click", "Activated", "MouseButton1Down"}) do
+            pcall(function()
+                local sig = btn[sigName]
+                if sig then
+                    for _, conn in pairs(getconnections(sig)) do
+                        if conn.Function then
+                            task.spawn(conn.Function)
+                            ok = true
+                        elseif conn.Fire then
+                            conn:Fire()
+                            ok = true
                         end
                     end
                 end
-                if targetNote then
-                    lastRhythmLaneHit[lane] = now
-                    hitThisFrame = true
-                    if shouldMiss("rhythm") then return end
-                    local kc = rhythmKeyMap[lane]
-                    if kc then
-                        pcall(function()
-                            VIM:SendKeyEvent(true, kc, false, game)
-                            task.delay(0.03, function()
-                                VIM:SendKeyEvent(false, kc, false, game)
-                            end)
-                        end)
-                    end
-                    if bestDist <= 0.1 and RhythmHitEvent then
-                        pcall(function() RhythmHitEvent:FireServer("hit") end)
+            end)
+        end
+    end
+    if firesignal then
+        pcall(function()
+            firesignal(btn.MouseButton1Click)
+            firesignal(btn.MouseButton1Down)
+            ok = true
+        end)
+    end
+    return ok
+end
+
+local function StepRhythm(ui)
+    local rhythm = ui:FindFirstChild("Rhythm")
+    if not rhythm or not rhythm.Visible then return end
+    if not RhythmHitEvent then
+        RhythmHitEvent = Events and Events:FindFirstChild("RhythmHit")
+    end
+    local now = os.clock()
+    for _, lane in ipairs(rhythmLanes) do
+        if now - (lastRhythmHit[lane] or 0) < 0.06 then continue end
+        local laneFrame = rhythm:FindFirstChild("Progression" .. lane)
+        if not laneFrame then continue end
+        local barFrame = laneFrame:FindFirstChild("BarFrame")
+        local targetY = barFrame and barFrame.Position.Y.Scale or 0.85
+        local bestDist, note = 0.18, nil
+        for _, child in ipairs(laneFrame:GetDescendants()) do
+            if child:IsA("GuiObject") and child.Visible then
+                local n = string.lower(child.Name)
+                if n:find("note") or n:find("fx") or n == "note_fx" then
+                    local y = child.Position.Y.Scale
+                    local dist = math.abs(y - targetY)
+                    if dist < bestDist then
+                        bestDist = dist
+                        note = child
                     end
                 end
+            end
+        end
+        if note then
+            lastRhythmHit[lane] = now
+            local btn = laneFrame:FindFirstChild("Button") or laneFrame:FindFirstChildWhichIsA("TextButton", true)
+            fireGuiButton(btn)
+            local kc = rhythmKeyMap[lane]
+            if kc then
+                pcall(function()
+                    VIM:SendKeyEvent(true, kc, false, game)
+                    task.delay(0.025, function()
+                        VIM:SendKeyEvent(false, kc, false, game)
+                    end)
+                end)
+            end
+            if RhythmHitEvent then
+                pcall(function() RhythmHitEvent:FireServer("hit") end)
             end
         end
     end
 end
 
-local function StepPhase2(fishingUI)
-    local bossBar = fishingUI:FindFirstChild("BossFightBar")
-    if not bossBar or not bossBar.Visible then
-        if #phase2History > 0 then
-            for i = #phase2History, 1, -1 do phase2History[i] = nil end
-        end
-        return
-    end
+local function StepPhase2(ui)
+    local bossBar = ui:FindFirstChild("BossFightBar")
+    if not bossBar or not bossBar.Visible then return end
     local bar = bossBar:FindFirstChild("Bar")
     local hitbox = bossBar:FindFirstChild("Hitbox")
     if not bar or not hitbox then return end
+    local now = os.clock()
+    if now - lastPhase2Hit < 0.07 then return end
     local barW = bar.Size.X.Scale
     local barCenter = bar.Position.X.Scale + barW * (0.5 - bar.AnchorPoint.X)
     local hbW = hitbox.Size.X.Scale
     local hbLeft = hitbox.Position.X.Scale - hbW * hitbox.AnchorPoint.X
-    local now = os.clock()
-    table.insert(phase2History, { t = now, x = barCenter })
-    while #phase2History > 1 and (now - phase2History[1].t) > 0.2 do
-        table.remove(phase2History, 1)
+    local pad = hbW * 0.35
+    local bad = bossBar:FindFirstChild("HitboxBad")
+    if bad and bad.Visible then
+        local bw = bad.Size.X.Scale
+        local bl = bad.Position.X.Scale - bw * bad.AnchorPoint.X
+        if barCenter >= bl and barCenter <= bl + bw then return end
     end
-    if now - lastPhase2Hit < (0.2 + math.random() * 0.1) then return end
-    local evalX = barCenter
-    local targetTime = now - 0.05
-    for i = #phase2History, 1, -1 do
-        if phase2History[i].t <= targetTime then
-            evalX = phase2History[i].x
-            break
-        end
-    end
-    local badBox = bossBar:FindFirstChild("HitboxBad")
-    if badBox and badBox.Visible then
-        local badW = badBox.Size.X.Scale
-        local badLeft = badBox.Position.X.Scale - badW * badBox.AnchorPoint.X
-        if evalX >= (badLeft - 0.01) and evalX <= (badLeft + badW + 0.01) then return end
-    end
-    local pad = hbW * 0.15
-    if evalX >= (hbLeft - pad) and evalX <= (hbLeft + hbW + pad) then
+    if barCenter >= (hbLeft - pad) and barCenter <= (hbLeft + hbW + pad) then
         lastPhase2Hit = now
-        if shouldMiss("phase2") then return end
-        task.delay(math.random() * 0.03, function()
+        local main = lp.PlayerGui:FindFirstChild("MainGui")
+        local mobile = main and main:FindFirstChild("Mobile")
+        local mFish = mobile and mobile:FindFirstChild("Fishing")
+        if not fireGuiButton(mFish) then
             pcall(function()
-                local main = lp.PlayerGui:FindFirstChild("MainGui")
-                local mobile = main and main:FindFirstChild("Mobile")
-                local mFish = mobile and mobile:FindFirstChild("Fishing")
-                if mFish and firesignal then
-                    firesignal(mFish.MouseButton1Down)
-                elseif mFish and getconnections then
-                    for _, conn in pairs(getconnections(mFish.MouseButton1Down)) do
-                        if conn.Function then task.spawn(conn.Function) break
-                        elseif conn.Fire then conn:Fire() break end
-                    end
-                else
-                    VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                    task.delay(0.02, function()
-                        VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
-                    end)
-                end
+                VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                task.delay(0.02, function()
+                    VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                end)
             end)
-        end)
+        end
     end
 end
 
 RunService.Heartbeat:Connect(function()
-    if not getgenv().Beo_AutoMiniGame and not getgenv().Beo_AutoRhythm and not getgenv().Beo_AutoPhase2 then return end
+    if not getgenv().Beo_AutoMiniGame then return end
     pcall(function()
-        local fishingUI = getFishingUI()
-        if not fishingUI or not fishingUI.Visible then return end
-        if getgenv().Beo_AutoMiniGame or getgenv().Beo_AutoRhythm then
-            StepRhythm(fishingUI)
-        end
-        if getgenv().Beo_AutoMiniGame or getgenv().Beo_AutoPhase2 then
-            StepPhase2(fishingUI)
-        end
+        local ui = getFishingUI()
+        if not ui or not ui.Visible then return end
+        StepRhythm(ui)
+        StepPhase2(ui)
     end)
 end)
