@@ -580,17 +580,17 @@ makeTab("TP", "T", 4)
 makeTab("ESP", "E", 5)
 makeTab("More", "M", 6)
 openPage("Fish")
-local remoteNames = {"UseSkill","CastSkill","Skill","ActivateSkill","PlaySkill","SkillActivate","DoSkill"}
-local function getSkillRemote()
+local rem = {"UseSkill","CastSkill","Skill","ActivateSkill","PlaySkill","SkillActivate","DoSkill"}
+local function getR()
     local ev = RS:FindFirstChild("Events") or RS
-    for _, n in ipairs(remoteNames) do
+    for _, n in ipairs(rem) do
         local r = ev:FindFirstChild(n, true)
         if r and (r:IsA("RemoteEvent") or r:IsA("RemoteFunction")) then return r end
     end
 end
-local skRemote = getSkillRemote()
-local function castSkill(k)
-    if skRemote then pcall(function() skRemote:FireServer(k) end) return end
+local skR = getR()
+local function useSk(k)
+    if skR then pcall(function() skR:FireServer(k) end) return end
     pcall(function()
         VIM:SendKeyEvent(true, Enum.KeyCode[k], false, game)
         task.wait(0.05)
@@ -600,21 +600,21 @@ end
 
 spawn(function()
     while true do
-        task.wait(0.5 + math.random() * 0.3) -- Nhanh hơn
+        task.wait(0.5 + math.random() * 0.3)
         pcall(function()
             local c = lp.Character
             if not c then return end
             local h = c:FindFirstChildOfClass("Humanoid")
             if not h or h.Health <= 0 then return end
-            local function gap() task.wait(0.15 + math.random() * 0.05) end -- Nhanh hơn
+            local function gap() task.wait(0.15 + math.random() * 0.05) end
             
             if getgenv().AllSkill then
-                castSkill("Z") gap() castSkill("X") gap() castSkill("C") gap() castSkill("V")
+                useSk("Z") gap() useSk("X") gap() useSk("C") gap() useSk("V")
             else
-                if getgenv().SkZ then castSkill("Z") gap() end
-                if getgenv().SkX then castSkill("X") gap() end
-                if getgenv().SkC then castSkill("C") gap() end
-                if getgenv().SkV then castSkill("V") end
+                if getgenv().SkZ then useSk("Z") gap() end
+                if getgenv().SkX then useSk("X") gap() end
+                if getgenv().SkC then useSk("C") gap() end
+                if getgenv().SkV then useSk("V") end
             end
         end)
     end
@@ -622,15 +622,15 @@ end)
 
 spawn(function()
     while true do
-        task.wait(0.3 + math.random() * 0.2) -- Nhanh hơn
+        task.wait(0.3 + math.random() * 0.2)
         if getgenv().AutoCast then
             pcall(function()
                 local c = lp.Character
                 local gui = lp.PlayerGui:FindFirstChild("MainGui")
                 if c and gui then
-                    local isFishing = c:GetAttribute("Fishing")
+                    local fish = c:GetAttribute("Fishing")
                     local fUI = gui:FindFirstChild("Fishing")
-                    if not isFishing and (not fUI or not fUI.Visible) then
+                    if not fish and (not fUI or not fUI.Visible) then
                         if RS.Events and RS.Events:FindFirstChild("Fishing") then
                             RS.Events.Fishing:FireServer()
                         end
@@ -657,17 +657,17 @@ spawn(function()
 end)
 
 spawn(function()
-    local lastBuy = 0
+    local lastB = 0
     while true do
         task.wait(0.5)
         if getgenv().AutoBuyBait and getgenv().BuyBaitName ~= "" then
             local now = tick()
-            if now - lastBuy >= (getgenv().BuyBaitDelay or 5) then
-                lastBuy = now
+            if now - lastB >= (getgenv().BuyBaitDelay or 5) then
+                lastB = now
                 pcall(function()
-                    local buyEv = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
-                    if buyEv then
-                        buyEv:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount)
+                    local ev = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
+                    if ev then
+                        ev:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount)
                     end
                 end)
             end
@@ -675,25 +675,23 @@ spawn(function()
     end
 end)
 
--- ==========================================
--- AUTO REEL (HOLD BAR NÂNG CẤP)
--- ==========================================
-local UpdateFishProgression = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
-local isTweening = false
+-- REEL MỚI (Lấy từ file Heavy)
+local uProg = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
+local isTwe = false
 
-local function tryLockBar()
-    if isTweening then return end
+local function lockB()
+    if isTwe then return end
     local gui = lp.PlayerGui:FindFirstChild("MainGui")
     local fUI = gui and gui:FindFirstChild("Fishing")
     if not fUI or not fUI.Visible then return end
     
-    local barFrame = fUI:FindFirstChild("BarFrame")
-    local bar = barFrame and barFrame:FindFirstChild("Bar")
+    local bF = fUI:FindFirstChild("BarFrame")
+    local b = bF and bF:FindFirstChild("Bar")
     
-    if bar and bar.Position.X.Scale ~= 0.5 then
-        isTweening = true
-        bar:TweenPosition(UDim2.new(0.5, 0, bar.Position.Y.Scale, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
-        task.delay(0.05, function() isTweening = false end)
+    if b and b.Position.X.Scale ~= 0.5 then
+        isTwe = true
+        b:TweenPosition(UDim2.new(0.5, 0, b.Position.Y.Scale, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
+        task.delay(0.05, function() isTwe = false end)
     end
 end
 
@@ -703,11 +701,9 @@ spawn(function()
             local gui = lp.PlayerGui:FindFirstChild("MainGui")
             local fUI = gui and gui:FindFirstChild("Fishing")
             if fUI and fUI.Visible then
-                tryLockBar()
-                if UpdateFishProgression then
-                    pcall(function()
-                        UpdateFishProgression:FireServer()
-                    end)
+                lockB()
+                if uProg then
+                    pcall(function() uProg:FireServer() end)
                 end
             end
         end
@@ -715,24 +711,24 @@ spawn(function()
     end
 end)
 
-local oldWater, wState = {}, false
+local oldW, wSt = {}, false
 spawn(function()
     while task.wait(0.3) do
         local on = getgenv().Water
-        if on and not wState then
+        if on and not wSt then
             for _, v in pairs(workspace:GetDescendants()) do
                 if v:IsA("BasePart") and v.Name:lower() == "water" then
-                    oldWater[v] = v.CanCollide
+                    oldW[v] = v.CanCollide
                     v.CanCollide = true
                 end
             end
-        elseif not on and wState then
-            for w, old in pairs(oldWater) do
-                if w and w.Parent then w.CanCollide = old end
+        elseif not on and wSt then
+            for w, o in pairs(oldW) do
+                if w and w.Parent then w.CanCollide = o end
             end
-            oldWater = {}
+            oldW = {}
         end
-        wState = on
+        wSt = on
     end
 end)
 
@@ -745,8 +741,8 @@ spawn(function()
                 if not h then return end
                 local gui = lp.PlayerGui:FindFirstChild("MainGui")
                 local fUI = gui and gui:FindFirstChild("Fishing")
-                local isFishing = c:GetAttribute("Fishing")
-                if (fUI and fUI.Visible) or isFishing then
+                local fish = c:GetAttribute("Fishing")
+                if (fUI and fUI.Visible) or fish then
                     h.WalkSpeed = getgenv().SpdFish or 0
                 elseif not getgenv().Noclip then
                     h.WalkSpeed = getgenv().SpdNorm or 46
@@ -768,36 +764,36 @@ RunService.Stepped:Connect(function()
 end)
 
 -- AUTO BOSS
-local ePos = CFrame.new(-114.81, 9.28, 1356.67)
-local lPos = CFrame.new(-2873.62, 32.17, 1337.38)
+local eP = CFrame.new(-114.81, 9.28, 1356.67)
+local lP = CFrame.new(-2873.62, 32.17, 1337.38)
 
 spawn(function()
     while task.wait(1) do
         if getgenv().AutoEnzo or getgenv().AutoLong then
             pcall(function()
-                local tPos = getgenv().AutoLong and lPos or ePos
+                local tP = getgenv().AutoLong and lP or eP
                 local c = lp.Character
                 if c and c:FindFirstChild("HumanoidRootPart") then
-                    if (c.HumanoidRootPart.Position - tPos.Position).Magnitude > 5 then
-                        c.HumanoidRootPart.CFrame = tPos
+                    if (c.HumanoidRootPart.Position - tP.Position).Magnitude > 5 then
+                        c.HumanoidRootPart.CFrame = tP
                     end
                     local mGui = lp.PlayerGui:FindFirstChild("MainGui")
                     local mMenu = mGui and mGui:FindFirstChild("Menu")
                     if mMenu then
                         for _, f in ipairs(mMenu:GetChildren()) do
                             if f:IsA("Frame") and f.Visible then
-                                local sFold = f:FindFirstChild("Select", true)
-                                local bFold = sFold and sFold:FindFirstChild("button")
-                                if bFold then
-                                    local mBtn = bFold:FindFirstChild(getgenv().BossMode)
-                                    if mBtn then
-                                        if firesignal then firesignal(mBtn.MouseButton1Click) else mBtn:Click() end
+                                local sF = f:FindFirstChild("Select", true)
+                                local bF = sF and sF:FindFirstChild("button")
+                                if bF then
+                                    local mB = bF:FindFirstChild(getgenv().BossMode)
+                                    if mB then
+                                        if firesignal then firesignal(mB.MouseButton1Click) else mB:Click() end
                                         task.wait(0.1)
                                     end
                                 end
-                                local fBtn = f:FindFirstChild("Fight", true)
-                                if fBtn then
-                                    if firesignal then firesignal(fBtn.MouseButton1Click) else fBtn:Click() end
+                                local fB = f:FindFirstChild("Fight", true)
+                                if fB then
+                                    if firesignal then firesignal(fB.MouseButton1Click) else fB:Click() end
                                 end
                             end
                         end
