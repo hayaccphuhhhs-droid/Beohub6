@@ -466,7 +466,6 @@ pages.TP = function()
     end
 end
 
--- Hàm Shop: Sell + Buy + Craft
 pages.Shop = function()
     addSec("AUTO SELL")
     addTgl("Auto Sell All", function() return getgenv().AutoSell end, function(v) getgenv().AutoSell = v end)
@@ -601,13 +600,14 @@ end
 
 spawn(function()
     while true do
-        task.wait(1.8 + math.random() * 0.6)
+        task.wait(0.5 + math.random() * 0.3) -- ĐÃ SỬA: Nhanh hơn
         pcall(function()
             local c = lp.Character
             if not c then return end
             local h = c:FindFirstChildOfClass("Humanoid")
             if not h or h.Health <= 0 then return end
-            local function gap() task.wait(0.22 + math.random() * 0.1) end
+            local function gap() task.wait(0.15 + math.random() * 0.05) end -- ĐÃ SỬA: Nhanh hơn
+            
             if getgenv().AllSkill then
                 castSkill("Z") gap() castSkill("X") gap() castSkill("C") gap() castSkill("V")
             else
@@ -622,7 +622,7 @@ end)
 
 spawn(function()
     while true do
-        task.wait(0.85 + math.random() * 0.3)
+        task.wait(0.3 + math.random() * 0.2) -- ĐÃ SỬA: Nhanh hơn
         if getgenv().AutoCast then
             pcall(function()
                 local c = lp.Character
@@ -670,8 +670,7 @@ spawn(function()
                         buyEv:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount)
                     end
                 end)
-            end
-        end
+            end        end
     end
 end)
 
