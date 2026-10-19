@@ -654,14 +654,15 @@ end
 
 spawn(function()
     while task.wait(1.2) do
-        if getgenv().ESP_Taoist or getgenv().ESP_Maoshan then
+        -- SỬA Ở ĐÂY: Dùng ESP_T và ESP_M thay vì ESP_Taoist, ESP_Maoshan
+        if getgenv().ESP_T or getgenv().ESP_M then
             for _, v in pairs(workspace:GetDescendants()) do
                 if v:IsA("Model") and v ~= lp.Character and not Players:GetPlayerFromCharacter(v) then
                     local n = string.lower(v.Name)
                     if v:FindFirstChildOfClass("Humanoid") then
-                        if n:find("taoist") and getgenv().ESP_Taoist then
+                        if n:find("taoist") and getgenv().ESP_T then
                             makeNpcEsp(v, "Taoist", Color3.fromRGB(255, 165, 0))
-                        elseif n:find("maoshan") and getgenv().ESP_Maoshan then
+                        elseif n:find("maoshan") and getgenv().ESP_M then
                             makeNpcEsp(v, "Maoshan", Color3.fromRGB(180, 0, 255))
                         end
                     end
@@ -675,7 +676,8 @@ spawn(function()
             end
         end
 
-        if getgenv().ESP_Player then
+        -- SỬA Ở ĐÂY: Dùng ESP_P thay vì ESP_Player
+        if getgenv().ESP_P then
             for _, p in ipairs(Players:GetPlayers()) do
                 if p ~= lp and p.Character then
                     makePlrEsp(p)
@@ -712,7 +714,7 @@ fishBtn.BorderSizePixel = 0
 fishBtn.Visible = false
 Instance.new("UICorner", fishBtn).CornerRadius = UDim.new(1, 0)
 getgenv().BeoFishButton = fishBtn
-fishBtn.Visible = getgenv().Beo_FishBtn
+fishBtn.Visible = getgenv().FakeBtn -- SỬA: Dùng FakeBtn thay vì Beo_FishBtn
 fishBtn.MouseButton1Click:Connect(function()
     pcall(function()
         if Events:FindFirstChild("Fishing") then Events.Fishing:FireServer() end
@@ -749,7 +751,8 @@ end
 local function lockBar()
     if lockingBar then return end
     if not fGui or not fGui.Visible or not fBar then return end
-    if not getgenv().Beo_AutoMiniGame then return end
+    -- SỬA Ở ĐÂY: Dùng MiniGame thay vì Beo_AutoMiniGame
+    if not getgenv().MiniGame then return end
     lockingBar = true
     pcall(function()
         fBar:TweenPosition(centerPos, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
@@ -951,7 +954,7 @@ RunService.RenderStepped:Connect(function()
     end
     bindBar()
     lockBar()
-    if getgenv().Beo_AutoMiniGame then
+    if getgenv().MiniGame then
         stepBoss()
     end
 end)
@@ -969,7 +972,7 @@ RunService.Heartbeat:Connect(function()
     end
     bindBar()
     lockBar()
-    if getgenv().Beo_AutoMiniGame then
+    if getgenv().MiniGame then
         stepBoss()
         stepRhythm()
     end
