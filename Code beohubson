@@ -9,7 +9,7 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local lp = Players.LocalPlayer
 
-if game.PlaceId \~= 98502499119821 then
+if game.PlaceId ~= 98502499119821 then
     pcall(function()
         StarterGui:SetCore("SendNotification", {
             Title = "WRONG GAME",
@@ -87,7 +87,6 @@ task.spawn(function()
     end
 end)
 
--- xoa ui cu
 pcall(function()
     for _, g in ipairs({game.CoreGui, lp:WaitForChild("PlayerGui")}) do
         local old = g:FindFirstChild("BeoHubUI")
@@ -115,7 +114,6 @@ local stroke = Instance.new("UIStroke", Main)
 stroke.Color = Color3.fromRGB(0, 200, 140)
 stroke.Thickness = 1.5
 
--- Title bar (keo duoc)
 local TitleBar = Instance.new("Frame", Main)
 TitleBar.Size = UDim2.new(1, 0, 0, 36)
 TitleBar.BackgroundColor3 = Color3.fromRGB(24, 24, 30)
@@ -154,7 +152,6 @@ CloseBtn.TextSize = 14
 CloseBtn.BorderSizePixel = 0
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 6)
 
--- drag
 do
     local dragging, dragStart, startPos
     TitleBar.InputBegan:Connect(function(input)
@@ -312,8 +309,6 @@ local function addLabel(page, text)
     lbl.TextSize = 12
     lbl.TextXAlignment = Enum.TextXAlignment.Left
 end
-
--- Fish tab
 addLabel("Fish", "Auto Fishing")
 addToggle("Fish", "Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
 addToggle("Fish", "Auto Sell", function() return getgenv().SafeAutoSell end, function(v) getgenv().SafeAutoSell = v end)
@@ -334,12 +329,10 @@ addToggle("Fish", "Skill X", function() return getgenv().Beo_Skill_X end, functi
 addToggle("Fish", "Skill C", function() return getgenv().Beo_Skill_C end, function(v) getgenv().Beo_Skill_C = v end)
 addToggle("Fish", "Skill V", function() return getgenv().Beo_Skill_V end, function(v) getgenv().Beo_Skill_V = v end)
 
--- Boss
 addLabel("Boss", "Minigame")
 addToggle("Boss", "Auto MiniGame", function() return getgenv().Beo_AutoMiniGame end, function(v) getgenv().Beo_AutoMiniGame = v end)
 addLabel("Boss", "Hit khi note toi vach")
 
--- TP
 addLabel("TP", "Islands")
 local islands = {
     {"Beginning Isle", -201, 6, 35},
@@ -366,7 +359,6 @@ for _, is in ipairs(islands) do
     end)
 end
 
--- ESP
 addLabel("ESP", "ESP")
 addToggle("ESP", "ESP Taoist", function() return getgenv().ESP_Taoist end, function(v)
     getgenv().ESP_Taoist = v
@@ -418,7 +410,6 @@ addButton("ESP", "Clear ESP", function()
     getgenv().ESPPlayerList = {}
 end)
 
--- Join
 addLabel("Join", "Server")
 local jobBox = Instance.new("TextBox", pages["Join"])
 jobBox.Size = UDim2.new(1, -8, 0, 32)
@@ -434,16 +425,16 @@ Instance.new("UICorner", jobBox).CornerRadius = UDim.new(0, 6)
 
 addButton("Join", "Join Job ID", function()
     local id = jobBox.Text
-    if id \~= "" then
+    if id ~= "" then
         TeleportService:TeleportToPlaceInstance(game.PlaceId, id, lp)
     end
 end)
 addButton("Join", "Copy Job ID", function()
-    if game.JobId \~= "" then setclipboard(game.JobId) end
+    if game.JobId ~= "" then setclipboard(game.JobId) end
 end)
 addButton("Join", "Join Clipboard", function()
     local clip = getclipboard()
-    if clip and clip \~= "" then
+    if clip and clip ~= "" then
         TeleportService:TeleportToPlaceInstance(game.PlaceId, clip, lp)
     end
 end)
@@ -453,7 +444,7 @@ addButton("Join", "Low Player Server", function()
     local best, minP = nil, 999
     if data and data.data then
         for _, s in ipairs(data.data) do
-            if s.playing < minP and s.playing > 0 and s.id \~= game.JobId then
+            if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
                 minP = s.playing
                 best = s.id
             end
@@ -462,7 +453,6 @@ addButton("Join", "Low Player Server", function()
     if best then TeleportService:TeleportToPlaceInstance(game.PlaceId, best, lp) end
 end)
 
--- Char
 addLabel("Char", "Character")
 addToggle("Char", "Noclip", function() return getgenv().Beo_Noclip end, function(v) getgenv().Beo_Noclip = v end)
 addToggle("Char", "Auto Speed Control", function() return getgenv().AutoSpeedControl end, function(v) getgenv().AutoSpeedControl = v end)
@@ -494,12 +484,6 @@ CloseBtn.MouseButton1Click:Connect(function()
 end)
 
 selectTab("Fish")
-local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local lp = Players.LocalPlayer
-
 local PossibleRemotes = {
     "UseSkill", "CastSkill", "Skill", "ActivateSkill",
     "PlaySkill", "SkillActivate", "DoSkill"
@@ -662,11 +646,7 @@ RunService.Stepped:Connect(function()
         end
     end)
 end)
-local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local lp = Players.LocalPlayer
+
 local Events = RS:FindFirstChild("Events")
 
 local function CreateESP(npc, typ, color)
@@ -789,7 +769,7 @@ task.spawn(function()
     while task.wait(1) do
         if getgenv().ESP_Player then
             for _, plr in ipairs(Players:GetPlayers()) do
-                if plr \~= lp then CreatePlayerESP(plr) end
+                if plr ~= lp then CreatePlayerESP(plr) end
             end
         else
             for plr in pairs(getgenv().ESPPlayerList) do RemovePlayerESP(plr) end
