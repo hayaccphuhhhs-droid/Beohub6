@@ -715,7 +715,7 @@ spawn(function()
     end
 end)
 
--- REEL MỚI (Lấy từ file Heavy)
+-- Auto Reel
 local uProg = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
 local isTwe = false
 
