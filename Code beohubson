@@ -112,8 +112,9 @@ bStroke.Color = ACCENT
 bStroke.Thickness = 2
 
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.new(0, 380, 0, 280)
-Main.Position = UDim2.new(0.5, -190, 0.5, -140)
+-- Tăng size UI lên cho dễ nhìn
+Main.Size = UDim2.new(0, 400, 0, 320) 
+Main.Position = UDim2.new(0.5, -200, 0.5, -160)
 Main.BackgroundColor3 = BG
 Main.BorderSizePixel = 0
 Main.Visible = false
@@ -171,7 +172,19 @@ Content.ScrollBarThickness = 3
 Content.ScrollBarImageColor3 = ACCENT
 Content.CanvasSize = UDim2.new(0, 0, 0, 0)
 Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-Instance.new("UIListLayout", Content).Padding = UDim.new(0, 6)
+
+-- FIX LỖI ĐÈ NHAU: Thêm Padding cho Layout
+local layout = Instance.new("UIListLayout", Content)
+layout.Padding = UDim.new(0, 6)
+layout.SortOrder = Enum.SortOrder.LayoutOrder
+layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+
+-- BIẾN ĐẾM THỨ TỰ (FIX LỖI LỘN XỘN)
+local layoutOrder = 0
+local function getNextOrder()
+    layoutOrder = layoutOrder + 1
+    return layoutOrder
+end
 
 local function makeDrag(target, moveMain)
     local dragging, start, spos
@@ -208,6 +221,7 @@ CloseX.MouseButton1Click:Connect(function() setOpen(false) end)
 
 local pages, tabBtns = {}, {}
 local function wipe()
+    layoutOrder = 0 -- Reset thứ tự mỗi khi đổi tab
     for _, c in ipairs(Content:GetChildren()) do
         if not c:IsA("UIListLayout") then c:Destroy() end
     end
@@ -244,13 +258,14 @@ end
 
 local function section(t)
     local l = Instance.new("TextLabel", Content)
-    l.Size = UDim2.new(1, -4, 0, 18)
+    l.Size = UDim2.new(1, -4, 0, 22)
     l.BackgroundTransparency = 1
     l.Text = t
     l.TextColor3 = ACCENT
     l.Font = Enum.Font.GothamBold
-    l.TextSize = 11
+    l.TextSize = 12
     l.TextXAlignment = Enum.TextXAlignment.Left
+    l.LayoutOrder = getNextOrder()
 end
 
 local function toggle(text, get, set)
@@ -258,7 +273,9 @@ local function toggle(text, get, set)
     r.Size = UDim2.new(1, -4, 0, 34)
     r.BackgroundColor3 = CARD
     r.BorderSizePixel = 0
+    r.LayoutOrder = getNextOrder()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
+    
     local l = Instance.new("TextLabel", r)
     l.Size = UDim2.new(1, -70, 1, 0)
     l.Position = UDim2.new(0, 12, 0, 0)
@@ -268,6 +285,7 @@ local function toggle(text, get, set)
     l.Font = Enum.Font.Gotham
     l.TextSize = 13
     l.TextXAlignment = Enum.TextXAlignment.Left
+    
     local b = Instance.new("TextButton", r)
     b.Size = UDim2.new(0, 48, 0, 24)
     b.Position = UDim2.new(1, -56, 0.5, -12)
@@ -275,6 +293,7 @@ local function toggle(text, get, set)
     b.Font = Enum.Font.GothamBold
     b.TextSize = 11
     Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
+    
     local function ref()
         if get() then
             b.Text = "ON"
@@ -299,8 +318,48 @@ local function button(text, cb)
     b.Font = Enum.Font.GothamBold
     b.TextSize = 12
     b.BorderSizePixel = 0
+    b.LayoutOrder = getNextOrder()
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function() pcall(cb) end)
+end
+
+-- GỘP NÚT SKILL Z X C V LẠI CHO GỌN
+local function skillRow()
+    local row = Instance.new("Frame", Content)
+    row.Size = UDim2.new(1, -4, 0, 34)
+    row.BackgroundColor3 = CARD
+    row.BorderSizePixel = 0
+    row.LayoutOrder = getNextOrder()
+    Instance.new("UICorner", row).CornerRadius = UDim.new(0, 8)
+    
+    local keys = {"Z", "X", "C", "V"}
+    for i, k in ipairs(keys) do
+        local btn = Instance.new("TextButton", row)
+        btn.Size = UDim2.new(0, 50, 0, 24)
+        btn.Position = UDim2.new(0, 12 + (i-1)*56, 0.5, -12)
+        btn.BorderSizePixel = 0
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 12
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        
+        local function refresh()
+            local active = getgenv()["Beo_Skill_"..k]
+            if active then
+                btn.Text = k .. " : ON"
+                btn.BackgroundColor3 = ACCENT
+                btn.TextColor3 = Color3.fromRGB(10, 14, 20)
+            else
+                btn.Text = k .. " : OFF"
+                btn.BackgroundColor3 = Color3.fromRGB(40, 45, 58)
+                btn.TextColor3 = Color3.fromRGB(140, 150, 165)
+            end
+        end
+        refresh()
+        btn.MouseButton1Click:Connect(function()
+            getgenv()["Beo_Skill_"..k] = not getgenv()["Beo_Skill_"..k]
+            refresh()
+        end)
+    end
 end
 
 pages.Fish = function()
@@ -315,12 +374,10 @@ pages.Fish = function()
     button("Sell All Now", function()
         if RS.Events and RS.Events.SellFish then RS.Events.SellFish:FireServer("All") end
     end)
+    
     section("SKILLS")
     toggle("All Skills", function() return getgenv().Beo_AutoSkillAll end, function(v) getgenv().Beo_AutoSkillAll = v end)
-    toggle("Skill Z", function() return getgenv().Beo_Skill_Z end, function(v) getgenv().Beo_Skill_Z = v end)
-    toggle("Skill X", function() return getgenv().Beo_Skill_X end, function(v) getgenv().Beo_Skill_X = v end)
-    toggle("Skill C", function() return getgenv().Beo_Skill_C end, function(v) getgenv().Beo_Skill_C = v end)
-    toggle("Skill V", function() return getgenv().Beo_Skill_V end, function(v) getgenv().Beo_Skill_V = v end)
+    skillRow() -- Hàng nút Z X C V gộp
 end
 
 pages.Boss = function()
