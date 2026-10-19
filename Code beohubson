@@ -10,13 +10,14 @@ local lp = Players.LocalPlayer
 
 if game.PlaceId ~= 98502499119821 then
     pcall(function()
-        SG:SetCore("SendNotification", {Title = "SAI GAME", Text = "Chỉ dành cho Heavyweight Fishing!", Duration = 5})
+        SG:SetCore("SendNotification", {Title = "WRONG GAME", Text = "Only for Heavyweight Fishing!", Duration = 5})
     end)
     return
 end
 
 local _def = {
-    AutoSell = false, SellTime = 6, HoldBar = false, MiniGame = false, Noclip = false,
+    AutoSell = false, SellDelay = 5, AutoBuyBait = false, BuyBaitAmount = 1, BuyBaitDelay = 5,
+    HoldBar = false, MiniGame = false, Noclip = false,
     AllSkill = false, SkZ = false, SkX = false, SkC = false, SkV = false,
     Water = false, AutoCast = false, AntiAdmin = true, AdminIn = false,
     ESP_T = false, ESP_M = false, ESP_P = false, SpdCtrl = true,
@@ -43,7 +44,7 @@ local function killAll()
     getgenv().AutoSell = false; getgenv().HoldBar = false; getgenv().MiniGame = false
     getgenv().Noclip = false; getgenv().AllSkill = false; getgenv().Water = false
     getgenv().AutoCast = false; getgenv().ESP_T = false; getgenv().ESP_M = false; getgenv().ESP_P = false
-    getgenv().AutoEnzo = false; getgenv().AutoLong = false
+    getgenv().AutoEnzo = false; getgenv().AutoLong = false; getgenv().AutoBuyBait = false
 end
 spawn(function()
     while task.wait(1) do
@@ -51,7 +52,7 @@ spawn(function()
             if chkAdmin() and not getgenv().AdminIn then
                 getgenv().AdminIn = true
                 killAll()
-                pcall(function() SG:SetCore("SendNotification", {Title = "ADMIN", Text = "Đã tắt script", Duration = 5}) end)
+                pcall(function() SG:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
             elseif not chkAdmin() then
                 getgenv().AdminIn = false
             end
@@ -295,6 +296,57 @@ local function addBtn(txt, cb)
     b.MouseButton1Click:Connect(function() pcall(cb) end)
 end
 
+local function addSlider(txt, minV, maxV, getV, setV)
+    local r = Instance.new("Frame", uiContent)
+    r.Size = UDim2.new(1, -4, 0, 50)
+    r.BackgroundColor3 = cCard
+    r.BorderSizePixel = 0
+    r.LayoutOrder = nxOrder()
+    Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
+    local l = Instance.new("TextLabel", r)
+    l.Size = UDim2.new(1, -20, 0, 20)
+    l.Position = UDim2.new(0, 10, 0, 4)
+    l.BackgroundTransparency = 1
+    l.Text = txt .. " : " .. tostring(getV())
+    l.TextColor3 = Color3.fromRGB(230, 235, 245)
+    l.Font = Enum.Font.Gotham
+    l.TextSize = 12
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    local bar = Instance.new("Frame", r)
+    bar.Size = UDim2.new(1, -20, 0, 4)
+    bar.Position = UDim2.new(0, 10, 1, -12)
+    bar.BackgroundColor3 = Color3.fromRGB(40, 45, 58)
+    bar.BorderSizePixel = 0
+    Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
+    local fill = Instance.new("Frame", bar)
+    fill.Size = UDim2.new((getV() - minV) / (maxV - minV), 0, 1, 0)
+    fill.BackgroundColor3 = cMain
+    fill.BorderSizePixel = 0
+    Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
+    local drag = Instance.new("TextButton", bar)
+    drag.Size = UDim2.new(1, 0, 1, 0)
+    drag.BackgroundTransparency = 1
+    drag.Text = ""
+    drag.MouseButton1Down:Connect(function()
+        local dragging = true
+        UIS.InputChanged:Connect(function(i)
+            if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+                local mouseX = i.Position.X
+                local rel = math.clamp((mouseX - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+                local val = math.floor(minV + (maxV - minV) * rel + 0.5)
+                fill.Size = UDim2.new(rel, 0, 1, 0)
+                l.Text = txt .. " : " .. val
+                setV(val)
+            end
+        end)
+        UIS.InputEnded:Connect(function(i)
+            if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
+    end)
+end
+
 local function addSkillRow()
     local r = Instance.new("Frame", uiContent)
     r.Size = UDim2.new(1, -4, 0, 34)
@@ -368,14 +420,10 @@ end
 pages.Fish = function()
     addSec("AUTO FISH")
     addTgl("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
-    addTgl("Auto Sell", function() return getgenv().AutoSell end, function(v) getgenv().AutoSell = v end)
     addTgl("Hold Bar", function() return getgenv().HoldBar end, function(v) getgenv().HoldBar = v end)
     addTgl("Fake Fish Btn", function() return getgenv().FakeBtn end, function(v)
         getgenv().FakeBtn = v
         if getgenv().BeoFishButton then getgenv().BeoFishButton.Visible = v end
-    end)
-    addBtn("Sell All Now", function()
-        if RS.Events and RS.Events.SellFish then RS.Events.SellFish:FireServer("All") end
     end)
     addSec("SKILLS")
     addTgl("All Skills", function() return getgenv().AllSkill end, function(v) getgenv().AllSkill = v end)
@@ -383,7 +431,7 @@ pages.Fish = function()
 end
 
 pages.Boss = function()
-    addSec("CÀI ĐẶT BOSS")
+    addSec("BOSS SETTINGS")
     addModeRow()
     addSec("AUTO BOSS")
     addTgl("Auto Enzo", function() return getgenv().AutoEnzo end, function(v) 
@@ -418,12 +466,41 @@ pages.TP = function()
     end
 end
 
+-- Hàm Shop: Sell + Buy + Craft
 pages.Shop = function()
+    addSec("AUTO SELL")
+    addTgl("Auto Sell All", function() return getgenv().AutoSell end, function(v) getgenv().AutoSell = v end)
+    addSlider("Sell Delay (Sec)", 1, 60, function() return getgenv().SellDelay end, function(v) getgenv().SellDelay = v end)
+    addBtn("Sell All Now", function()
+        if RS.Events and RS.Events.SellFish then RS.Events.SellFish:FireServer("All") end
+    end)
+
+    addSec("AUTO BUY BAIT")
+    addTgl("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
+    addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
+    addSlider("Buy Delay (Sec)", 5, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
+
     local Info = RS:FindFirstChild("Info")
     local bFolder = Info and Info:FindFirstChild("Bait")
-    local iFolder = Info and Info:FindFirstChild("Inventory")
-    
-    addSec("CHẾ MỒI (BẤM TAY)")
+    if bFolder then
+        for _, v in ipairs(bFolder:GetChildren()) do
+            if v:IsA("ModuleScript") then
+                local ok, d = pcall(require, v)
+                if ok and type(d) == "table" and not d.Ingredient then
+                    addBtn("Buy " .. v.Name, function()
+                        local buyEv = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
+                        if buyEv then
+                            buyEv:FireServer(v.Name, getgenv().BuyBaitAmount)
+                        else
+                            RS.Events.CraftBait:FireServer(v.Name, getgenv().BuyBaitAmount)
+                        end
+                    end)
+                end
+            end
+        end
+    end
+
+    addSec("CRAFT BAIT")
     local hasB = false
     if bFolder then
         for _, v in ipairs(bFolder:GetChildren()) do
@@ -431,18 +508,17 @@ pages.Shop = function()
                 local ok, d = pcall(require, v)
                 if ok and type(d) == "table" and d.Ingredient then
                     hasB = true
-                    addBtn("Chế " .. v.Name, function()
-                        if RS.Events and RS.Events:FindFirstChild("CraftBait") then
-                            RS.Events.CraftBait:FireServer(v.Name, 10)
-                        end
+                    addBtn("Craft " .. v.Name, function()
+                        RS.Events.CraftBait:FireServer(v.Name, 10)
                     end)
                 end
             end
         end
     end
-    if not hasB then addSec("(Không có mồi chế được)") end
+    if not hasB then addSec("(No craftable bait)") end
 
-    addSec("CHẾ CẦN (BẤM TAY)")
+    addSec("CRAFT ROD")
+    local iFolder = Info and Info:FindFirstChild("Inventory")
     local hasR = false
     if iFolder then
         for _, v in ipairs(iFolder:GetChildren()) do
@@ -450,16 +526,14 @@ pages.Shop = function()
                 local ok, d = pcall(require, v)
                 if ok and type(d) == "table" and d.Ingredient and d.Type == "Fishing Rod" then
                     hasR = true
-                    addBtn("Chế " .. v.Name, function()
-                        if RS.Events and RS.Events:FindFirstChild("CraftRod") then
-                            RS.Events.CraftRod:FireServer(v.Name)
-                        end
+                    addBtn("Craft " .. v.Name, function()
+                        RS.Events.CraftRod:FireServer(v.Name)
                     end)
                 end
             end
         end
     end
-    if not hasR then addSec("(Không có cần chế được)") end
+    if not hasR then addSec("(No craftable rod)") end
 end
 
 pages.ESP = function()
@@ -575,9 +649,28 @@ spawn(function()
                     RS.Events.SellFish:FireServer("All")
                 end
             end)
-            task.wait(getgenv().SellTime or 6)
+            task.wait(getgenv().SellDelay or 5)
         else 
             task.wait(0.5) 
+        end
+    end
+end)
+
+spawn(function()
+    local lastBuy = 0
+    while true do
+        task.wait(0.5)
+        if getgenv().AutoBuyBait and getgenv().BuyBaitName ~= "" then
+            local now = tick()
+            if now - lastBuy >= (getgenv().BuyBaitDelay or 5) then
+                lastBuy = now
+                pcall(function()
+                    local buyEv = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
+                    if buyEv then
+                        buyEv:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount)
+                    end
+                end)
+            end
         end
     end
 end)
@@ -653,9 +746,7 @@ RunService.Stepped:Connect(function()
     end)
 end)
 
--- ==========================================
--- AUTO BOSS (ENZO & LONG DIAOHAI)
--- ==========================================
+-- AUTO BOSS
 local ePos = CFrame.new(-114.81, 9.28, 1356.67)
 local lPos = CFrame.new(-2873.62, 32.17, 1337.38)
 
@@ -683,7 +774,7 @@ spawn(function()
                                         task.wait(0.1)
                                     end
                                 end
-                                local fBtn = f:FindFirstChild("Find", true)
+                                local fBtn = f:FindFirstChild("Fight", true)
                                 if fBtn then
                                     if firesignal then firesignal(fBtn.MouseButton1Click) else fBtn:Click() end
                                 end
