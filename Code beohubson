@@ -1175,5 +1175,9 @@ RunService.Heartbeat:Connect(function()
         stepRhythm()
     end
 end)
-
 refreshGui()
+local vu = game:GetService("VirtualUser")
+lp.Idled:Connect(function()
+    vu:CaptureController()
+    vu:ClickButton2(Vector2.new())
+end)
