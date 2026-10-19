@@ -600,13 +600,13 @@ end
 
 spawn(function()
     while true do
-        task.wait(0.5 + math.random() * 0.3) -- ĐÃ SỬA: Nhanh hơn
+        task.wait(0.5 + math.random() * 0.3) -- Nhanh hơn
         pcall(function()
             local c = lp.Character
             if not c then return end
             local h = c:FindFirstChildOfClass("Humanoid")
             if not h or h.Health <= 0 then return end
-            local function gap() task.wait(0.15 + math.random() * 0.05) end -- ĐÃ SỬA: Nhanh hơn
+            local function gap() task.wait(0.15 + math.random() * 0.05) end -- Nhanh hơn
             
             if getgenv().AllSkill then
                 castSkill("Z") gap() castSkill("X") gap() castSkill("C") gap() castSkill("V")
@@ -622,7 +622,7 @@ end)
 
 spawn(function()
     while true do
-        task.wait(0.3 + math.random() * 0.2) -- ĐÃ SỬA: Nhanh hơn
+        task.wait(0.3 + math.random() * 0.2) -- Nhanh hơn
         if getgenv().AutoCast then
             pcall(function()
                 local c = lp.Character
@@ -670,27 +670,49 @@ spawn(function()
                         buyEv:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount)
                     end
                 end)
-            end        end
+            end
+        end
     end
 end)
 
-local lastHB = 0
-RunService.RenderStepped:Connect(function()
-    if not getgenv().HoldBar then return end
-    pcall(function()
-        local gui = lp.PlayerGui:FindFirstChild("MainGui")
-        local fUI = gui and gui:FindFirstChild("Fishing")
-        if not fUI or not fUI.Visible then return end
-        local bFrame = fUI:FindFirstChild("BarFrame")
-        local b = bFrame and bFrame:FindFirstChild("Bar")
-        if b then b.Position = UDim2.new(0.5, 0, b.Position.Y.Scale, 0) end
-        if tick() - lastHB >= (0.18 + math.random() * 0.08) then
-            lastHB = tick()
-            if RS.Events and RS.Events:FindFirstChild("Fishing") then
-                RS.Events.Fishing:FireServer("1")
+-- ==========================================
+-- AUTO REEL (HOLD BAR NÂNG CẤP)
+-- ==========================================
+local UpdateFishProgression = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
+local isTweening = false
+
+local function tryLockBar()
+    if isTweening then return end
+    local gui = lp.PlayerGui:FindFirstChild("MainGui")
+    local fUI = gui and gui:FindFirstChild("Fishing")
+    if not fUI or not fUI.Visible then return end
+    
+    local barFrame = fUI:FindFirstChild("BarFrame")
+    local bar = barFrame and barFrame:FindFirstChild("Bar")
+    
+    if bar and bar.Position.X.Scale ~= 0.5 then
+        isTweening = true
+        bar:TweenPosition(UDim2.new(0.5, 0, bar.Position.Y.Scale, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
+        task.delay(0.05, function() isTweening = false end)
+    end
+end
+
+spawn(function()
+    while task.wait(0.1) do
+        if getgenv().HoldBar then
+            local gui = lp.PlayerGui:FindFirstChild("MainGui")
+            local fUI = gui and gui:FindFirstChild("Fishing")
+            if fUI and fUI.Visible then
+                tryLockBar()
+                if UpdateFishProgression then
+                    pcall(function()
+                        UpdateFishProgression:FireServer()
+                    end)
+                end
             end
         end
-    end)
+        task.wait(0.15)
+    end
 end)
 
 local oldWater, wState = {}, false
