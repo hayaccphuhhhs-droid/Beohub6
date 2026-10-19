@@ -1181,3 +1181,78 @@ lp.Idled:Connect(function()
     vu:CaptureController()
     vu:ClickButton2(Vector2.new())
 end)
+local fl = "BeoHubCfg"
+local fPath = fl .. "/data.json"
+
+local function saveCfg()
+    pcall(function()
+        if not isfolder(fl) then makefolder(fl) end
+        local t = {}
+        for k, v in pairs(getgenv()) do
+            if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
+                if k ~= "AntiAdmin" and k ~= "AdminIn" then 
+                    t[k] = v 
+                end
+            end
+        end
+        writefile(fPath, HS:JSONEncode(t))
+    end)
+end
+
+local function loadCfg()
+    pcall(function()
+        if isfile(fPath) then
+            local t = HS:JSONDecode(readfile(fPath))
+            for k, v in pairs(t) do
+                if getgenv()[k] ~= nil then
+                    getgenv()[k] = v
+                end
+            end
+        end
+    end)
+end
+loadCfg()
+
+local oldT = addTgl
+addTgl = function(txt, getV, setV)
+    oldT(txt, getV, function(v)
+        setV(v)
+        saveCfg()
+    end)
+end
+
+local oldS = addSlider
+addSlider = function(txt, minV, maxV, getV, setV)
+    oldS(txt, minV, maxV, getV, function(v)
+        setV(v)
+        saveCfg()
+    end)
+end
+local TS = game:GetService("TeleportService")
+local lp = game:GetService("Players").LocalPlayer
+local pId = game.PlaceId
+
+getgenv().AutoRejoin = true
+
+lp.OnTeleport:Connect(function(s)
+    if getgenv().AutoRejoin and (s == Enum.TeleportState.Started or s == Enum.TeleportState.InProgress) then
+        pcall(function()
+            writefile(fl .. "/lastJob.txt", game.JobId)
+        end)
+    end
+end)
+
+game:GetService("Players").PlayerRemoving:Connect(function(p)
+    if p == lp and getgenv().AutoRejoin then
+        pcall(function()
+            local jPath = fl .. "/lastJob.txt"
+            if isfile(jPath) then
+                local jId = readfile(jPath)
+                if jId and jId ~= "" then
+                    task.wait(5)
+                    TS:TeleportToPlaceInstance(pId, jId, p)
+                end
+            end
+        end)
+    end
+end)
