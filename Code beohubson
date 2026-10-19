@@ -31,6 +31,24 @@ getgenv().ESPList = getgenv().ESPList or {}
 getgenv().ESPPlayerList = getgenv().ESPPlayerList or {}
 getgenv().BeoFishButton = nil
 
+-- LOAD CONFIG
+local fl = "BeoHubCfg"
+local fPath = fl .. "/data.json"
+
+local function loadCfg()
+    pcall(function()
+        if isfile(fPath) then
+            local t = HS:JSONDecode(readfile(fPath))
+            for k, v in pairs(t) do
+                if getgenv()[k] ~= nil then
+                    getgenv()[k] = v
+                end
+            end
+        end
+    end)
+end
+loadCfg()
+
 local admins = {"tom_iceren", "ctgthecreator"}
 local function chkAdmin()
     for _, p in ipairs(Players:GetPlayers()) do
@@ -244,6 +262,21 @@ local function addSec(txt)
     l.LayoutOrder = nxOrder()
 end
 
+local function saveCfg()
+    pcall(function()
+        if not isfolder(fl) then makefolder(fl) end
+        local t = {}
+        for k, v in pairs(getgenv()) do
+            if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
+                if k ~= "AntiAdmin" and k ~= "AdminIn" then 
+                    t[k] = v 
+                end
+            end
+        end
+        writefile(fPath, HS:JSONEncode(t))
+    end)
+end
+
 local function addTgl(txt, getV, setV)
     local r = Instance.new("Frame", uiContent)
     r.Size = UDim2.new(1, -4, 0, 34)
@@ -279,7 +312,11 @@ local function addTgl(txt, getV, setV)
         end
     end
     ref()
-    b.MouseButton1Click:Connect(function() setV(not getV()) ref() end)
+    b.MouseButton1Click:Connect(function()
+        setV(not getV())
+        ref()
+        saveCfg()
+    end)
 end
 
 local function addBtn(txt, cb)
@@ -337,6 +374,7 @@ local function addSlider(txt, minV, maxV, getV, setV)
                 fill.Size = UDim2.new(rel, 0, 1, 0)
                 l.Text = txt .. " : " .. val
                 setV(val)
+                saveCfg()
             end
         end)
         UIS.InputEnded:Connect(function(i)
@@ -379,6 +417,7 @@ local function addSkillRow()
         b.MouseButton1Click:Connect(function()
             getgenv()["Sk"..k] = not getgenv()["Sk"..k]
             sync()
+            saveCfg()
         end)
     end
 end
@@ -415,6 +454,7 @@ local function addModeRow()
         if not idx then idx = 1 else idx = (idx % #modes) + 1 end
         getgenv().BossMode = modes[idx]
         b.Text = getgenv().BossMode
+        saveCfg()
     end)
 end
 pages.Fish = function()
@@ -1193,61 +1233,12 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 refreshGui()
+
 local vu = game:GetService("VirtualUser")
 lp.Idled:Connect(function()
     vu:CaptureController()
     vu:ClickButton2(Vector2.new())
 end)
-local fl = "BeoHubCfg"
-local fPath = fl .. "/data.json"
-
-local function saveCfg()
-    pcall(function()
-        if not isfolder(fl) then makefolder(fl) end
-        local t = {}
-        for k, v in pairs(getgenv()) do
-            if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
-                if k ~= "AntiAdmin" and k ~= "AdminIn" then 
-                    t[k] = v 
-                end
-            end
-        end
-        writefile(fPath, HS:JSONEncode(t))
-    end)
-end
-
-local function loadCfg()
-    pcall(function()
-        if isfile(fPath) then
-            local t = HS:JSONDecode(readfile(fPath))
-            for k, v in pairs(t) do
-                if getgenv()[k] ~= nil then
-                    getgenv()[k] = v
-                end
-            end
-        end
-    end)
-end
-loadCfg()
-
-local oldT = addTgl
-addTgl = function(txt, getV, setV)
-    oldT(txt, getV, function(v)
-        setV(v)
-        saveCfg()
-    end)
-end
-
-local oldS = addSlider
-addSlider = function(txt, minV, maxV, getV, setV)
-    oldS(txt, minV, maxV, getV, function(v)
-        setV(v)
-        saveCfg()
-    end)
-end
-local TS = game:GetService("TeleportService")
-local lp = game:GetService("Players").LocalPlayer
-local pId = game.PlaceId
 
 getgenv().AutoRejoin = true
 
@@ -1267,7 +1258,7 @@ game:GetService("Players").PlayerRemoving:Connect(function(p)
                 local jId = readfile(jPath)
                 if jId and jId ~= "" then
                     task.wait(5)
-                    TS:TeleportToPlaceInstance(pId, jId, p)
+                    TS:TeleportToPlaceInstance(game.PlaceId, jId, p)
                 end
             end
         end)
