@@ -6,7 +6,6 @@ local TeleportService = game:GetService("TeleportService")
 local StarterGui = game:GetService("StarterGui")
 local HttpService = game:GetService("HttpService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local lp = Players.LocalPlayer
 
 if game.PlaceId ~= 98502499119821 then
@@ -120,9 +119,7 @@ Main.BorderSizePixel = 0
 Main.Visible = false
 Main.Active = true
 Instance.new("UICorner", Main).CornerRadius = UDim.new(0, 12)
-local mStroke = Instance.new("UIStroke", Main)
-mStroke.Color = Color3.fromRGB(40, 50, 70)
-mStroke.Thickness = 1
+Instance.new("UIStroke", Main).Color = Color3.fromRGB(40, 50, 70)
 
 local TitleBar = Instance.new("Frame", Main)
 TitleBar.Size = UDim2.new(1, 0, 0, 38)
@@ -141,8 +138,7 @@ local TitleTxt = Instance.new("TextLabel", TitleBar)
 TitleTxt.Size = UDim2.new(1, -80, 1, 0)
 TitleTxt.Position = UDim2.new(0, 22, 0, 0)
 TitleTxt.BackgroundTransparency = 1
-TitleTxt.Text = "BeoHub  <font color='#00d2ff'>v6</font>"
-TitleTxt.RichText = true
+TitleTxt.Text = "BeoHub  v6"
 TitleTxt.TextColor3 = Color3.fromRGB(240, 245, 255)
 TitleTxt.Font = Enum.Font.GothamBold
 TitleTxt.TextSize = 15
@@ -152,10 +148,10 @@ local CloseX = Instance.new("TextButton", TitleBar)
 CloseX.Size = UDim2.new(0, 28, 0, 28)
 CloseX.Position = UDim2.new(1, -34, 0.5, -14)
 CloseX.BackgroundColor3 = Color3.fromRGB(30, 34, 48)
-CloseX.Text = "×"
+CloseX.Text = "x"
 CloseX.TextColor3 = Color3.fromRGB(200, 200, 210)
 CloseX.Font = Enum.Font.GothamBold
-CloseX.TextSize = 18
+CloseX.TextSize = 16
 CloseX.BorderSizePixel = 0
 Instance.new("UICorner", CloseX).CornerRadius = UDim.new(0, 8)
 
@@ -175,9 +171,7 @@ Content.ScrollBarThickness = 3
 Content.ScrollBarImageColor3 = ACCENT
 Content.CanvasSize = UDim2.new(0, 0, 0, 0)
 Content.AutomaticCanvasSize = Enum.AutomaticSize.Y
-local lay = Instance.new("UIListLayout", Content)
-lay.Padding = UDim.new(0, 6)
-lay.SortOrder = Enum.SortOrder.LayoutOrder
+Instance.new("UIListLayout", Content).Padding = UDim.new(0, 6)
 
 local function makeDrag(target, moveMain)
     local dragging, start, spos
@@ -207,7 +201,7 @@ local function setOpen(v)
     open = v
     Main.Visible = open
     bStroke.Color = open and Color3.fromRGB(80, 255, 180) or ACCENT
-    Bubble.Text = open and "×" or "B"
+    Bubble.Text = open and "x" or "B"
 end
 Bubble.MouseButton1Click:Connect(function() setOpen(not open) end)
 CloseX.MouseButton1Click:Connect(function() setOpen(false) end)
@@ -306,10 +300,6 @@ local function button(text, cb)
     b.TextSize = 12
     b.BorderSizePixel = 0
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    local s = Instance.new("UIStroke", b)
-    s.Color = Color3.fromRGB(0, 210, 255)
-    s.Thickness = 1
-    s.Transparency = 0.7
     b.MouseButton1Click:Connect(function() pcall(cb) end)
 end
 
@@ -336,7 +326,7 @@ end
 pages.Boss = function()
     section("MINIGAME")
     toggle("Auto MiniGame", function() return getgenv().Beo_AutoMiniGame end, function(v) getgenv().Beo_AutoMiniGame = v end)
-    section("CD 0.17s · safe mode")
+    section("Per-note hit")
 end
 
 local isles = {
@@ -371,6 +361,16 @@ pages.More = function()
     toggle("Noclip", function() return getgenv().Beo_Noclip end, function(v) getgenv().Beo_Noclip = v end)
     toggle("Speed Control", function() return getgenv().AutoSpeedControl end, function(v) getgenv().AutoSpeedControl = v end)
     toggle("Walk on Water", function() return getgenv().WalkOnWater end, function(v) getgenv().WalkOnWater = v end)
+    button("Fix Lag", function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/Beohub/refs/heads/main/Fix%20lag"))()
+    end)
+    button("Copy Coordinates", function()
+        local c = lp.Character
+        if c and c:FindFirstChild("HumanoidRootPart") then
+            local p = c.HumanoidRootPart.Position
+            setclipboard(math.floor(p.X) .. ", " .. math.floor(p.Y) .. ", " .. math.floor(p.Z))
+        end
+    end)
     section("SERVER")
     button("Hop Low Players", function()
         local d = HttpService:JSONDecode(game:HttpGet(
@@ -388,11 +388,11 @@ pages.More = function()
     button("Copy JobId", function() if game.JobId ~= "" then setclipboard(game.JobId) end end)
 end
 
-addSide("Fish", "🎣", 1)
-addSide("Boss", "⚔", 2)
-addSide("TP", "📍", 3)
-addSide("ESP", "👁", 4)
-addSide("More", "⚙", 5)
+addSide("Fish", "F", 1)
+addSide("Boss", "B", 2)
+addSide("TP", "T", 3)
+addSide("ESP", "E", 4)
+addSide("More", "M", 5)
 show("Fish")
 local PossibleRemotes = {"UseSkill","CastSkill","Skill","ActivateSkill","PlaySkill","SkillActivate","DoSkill"}
 local function findSkillRemote()
@@ -537,7 +537,7 @@ RunService.Stepped:Connect(function()
         end
     end)
 end)
-local Events = RS:WaitForChild("Events")
+local Events = RS:FindFirstChild("Events") or RS
 
 local function CreateESP(npc, typ, color)
     if not npc or not npc:IsA("Model") or getgenv().ESPList[npc] then return end
@@ -633,29 +633,28 @@ fishBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
-local FishingGui, FishingBar, RhythmGui, BossFightBar, MobileFishingBtn
 local RhythmHitEvent = Events:FindFirstChild("RhythmHit")
-local lastRhythmHit = { A = 0, S = 0, D = 0 }
+local rhythmKeyMap = { A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D }
+local hitNotes = setmetatable({}, { __mode = "k" })
 local lastPhase2Hit = 0
 local phase2History = {}
-local rhythmKeyMap = { A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D }
-local HIT_CD = 0.17
 
-local function refreshGui()
+local function refresh()
     local main = lp.PlayerGui:FindFirstChild("MainGui")
-    if not main then return end
-    FishingGui = main:FindFirstChild("Fishing")
-    if not FishingGui then return end
-    local barFrame = FishingGui:FindFirstChild("BarFrame")
-    FishingBar = barFrame and barFrame:FindFirstChild("Bar")
-    RhythmGui = FishingGui:FindFirstChild("Rhythm")
-    BossFightBar = FishingGui:FindFirstChild("BossFightBar")
+    local fish = main and main:FindFirstChild("Fishing")
+    if not fish then return nil end
+    local bf = fish:FindFirstChild("BarFrame")
     local mobile = main:FindFirstChild("Mobile")
-    MobileFishingBtn = mobile and mobile:FindFirstChild("Fishing")
-    if not RhythmHitEvent then RhythmHitEvent = Events:FindFirstChild("RhythmHit") end
+    return {
+        ui = fish,
+        rhythm = fish:FindFirstChild("Rhythm"),
+        boss = fish:FindFirstChild("BossFightBar"),
+        bar = bf and bf:FindFirstChild("Bar"),
+        mobileFish = mobile and mobile:FindFirstChild("Fishing"),
+    }
 end
 
-local function triggerBtn(btn)
+local function fireBtn(btn)
     if not btn then return false end
     local ok = false
     if getconnections then
@@ -670,7 +669,7 @@ local function triggerBtn(btn)
             end)
         end
     end
-    if not ok and firesignal then
+    if firesignal then
         pcall(function()
             firesignal(btn.MouseButton1Down)
             firesignal(btn.MouseButton1Click)
@@ -680,52 +679,66 @@ local function triggerBtn(btn)
     return ok
 end
 
-local function StepRhythm()
-    if not RhythmGui or not RhythmGui.Visible then return end
-    local now = os.clock()
+local function StepRhythm(g)
+    local rhythm = g.rhythm
+    if not rhythm or not rhythm.Visible then return end
+    if not RhythmHitEvent or not RhythmHitEvent.Parent then
+        RhythmHitEvent = Events:FindFirstChild("RhythmHit")
+    end
     for _, lane in ipairs({"A", "S", "D"}) do
-        if now - (lastRhythmHit[lane] or 0) >= HIT_CD then
-            local laneFrame = RhythmGui:FindFirstChild("Progression" .. lane)
-            if laneFrame then
-                local barF = laneFrame:FindFirstChild("BarFrame")
-                local targetY = barF and barF.Position.Y.Scale or 0.85
-                local best, note = 0.07, nil
-                for _, ch in ipairs(laneFrame:GetChildren()) do
-                    if ch.Name == "Note_FX" and ch:IsA("GuiObject") and ch.Visible then
-                        local d = math.abs(ch.Position.Y.Scale - targetY)
-                        if d <= best then best = d note = ch end
+        local laneFrame = rhythm:FindFirstChild("Progression" .. lane)
+        if laneFrame then
+            local barF = laneFrame:FindFirstChild("BarFrame")
+            local targetY = barF and barF.Position.Y.Scale or 0.85
+            local bestDist, note = 0.11, nil
+            for _, ch in ipairs(laneFrame:GetChildren()) do
+                if ch.Name == "Note_FX" and ch:IsA("GuiObject") and ch.Visible and not hitNotes[ch] then
+                    local d = math.abs(ch.Position.Y.Scale - targetY)
+                    if d < bestDist then bestDist = d note = ch end
+                end
+            end
+            if not note then
+                for _, ch in ipairs(laneFrame:GetDescendants()) do
+                    if ch:IsA("GuiObject") and ch.Visible and not hitNotes[ch] then
+                        local n = string.lower(ch.Name)
+                        if n:find("note") then
+                            local d = math.abs(ch.Position.Y.Scale - targetY)
+                            if d < bestDist then bestDist = d note = ch end
+                        end
                     end
                 end
-                if note then
-                    lastRhythmHit[lane] = now
-                    local btn = laneFrame:FindFirstChild("Button")
-                        or laneFrame:FindFirstChildWhichIsA("TextButton", true)
-                    triggerBtn(btn)
-                    local kc = rhythmKeyMap[lane]
-                    if kc then
-                        pcall(function()
-                            VIM:SendKeyEvent(true, kc, false, game)
-                            task.delay(0.02, function()
-                                VIM:SendKeyEvent(false, kc, false, game)
-                            end)
+            end
+            if note and bestDist <= 0.11 then
+                hitNotes[note] = true
+                local btn = laneFrame:FindFirstChild("Button")
+                    or laneFrame:FindFirstChildWhichIsA("TextButton", true)
+                    or laneFrame:FindFirstChildWhichIsA("ImageButton", true)
+                fireBtn(btn)
+                local kc = rhythmKeyMap[lane]
+                if kc then
+                    pcall(function()
+                        VIM:SendKeyEvent(true, kc, false, game)
+                        task.delay(0.018, function()
+                            VIM:SendKeyEvent(false, kc, false, game)
                         end)
-                    end
-                    if RhythmHitEvent and best <= 0.07 then
-                        pcall(function() RhythmHitEvent:FireServer("hit") end)
-                    end
+                    end)
+                end
+                if RhythmHitEvent then
+                    pcall(function() RhythmHitEvent:FireServer("hit") end)
                 end
             end
         end
     end
 end
 
-local function StepPhase2()
-    if not BossFightBar or not BossFightBar.Visible then
+local function StepPhase2(g)
+    local boss = g.boss
+    if not boss or not boss.Visible then
         if #phase2History > 0 then table.clear(phase2History) end
         return
     end
-    local bar = BossFightBar:FindFirstChild("Bar")
-    local hitbox = BossFightBar:FindFirstChild("Hitbox")
+    local bar = boss:FindFirstChild("Bar")
+    local hitbox = boss:FindFirstChild("Hitbox")
     if not bar or not hitbox then return end
     local now = os.clock()
     local barW = bar.Size.X.Scale
@@ -733,27 +746,27 @@ local function StepPhase2()
     local hbW = hitbox.Size.X.Scale
     local hbLeft = hitbox.Position.X.Scale - hbW * hitbox.AnchorPoint.X
     table.insert(phase2History, { t = now, x = barCenter })
-    while #phase2History > 1 and (now - phase2History[1].t) > 0.15 do
+    while #phase2History > 1 and (now - phase2History[1].t) > 0.12 do
         table.remove(phase2History, 1)
     end
-    if now - lastPhase2Hit < HIT_CD then return end
+    if now - lastPhase2Hit < 0.12 then return end
     local evalX = barCenter
     for i = #phase2History, 1, -1 do
-        if phase2History[i].t <= now - 0.035 then
+        if phase2History[i].t <= now - 0.03 then
             evalX = phase2History[i].x
             break
         end
     end
-    local bad = BossFightBar:FindFirstChild("HitboxBad")
+    local bad = boss:FindFirstChild("HitboxBad")
     if bad and bad.Visible then
         local bw = bad.Size.X.Scale
         local bl = bad.Position.X.Scale - bw * bad.AnchorPoint.X
         if evalX >= bl and evalX <= bl + bw then return end
     end
-    local pad = hbW * 0.22
+    local pad = hbW * 0.2
     if evalX >= (hbLeft - pad) and evalX <= (hbLeft + hbW + pad) then
         lastPhase2Hit = now
-        if not triggerBtn(MobileFishingBtn) then
+        if not fireBtn(g.mobileFish) then
             pcall(function()
                 VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
                 task.delay(0.015, function()
@@ -767,14 +780,14 @@ end
 RunService.RenderStepped:Connect(function()
     if not getgenv().Beo_AutoMiniGame and not getgenv().Beo_HoldBar then return end
     pcall(function()
-        refreshGui()
-        if not FishingGui or not FishingGui.Visible then return end
-        if getgenv().Beo_HoldBar and FishingBar then
-            FishingBar.Position = UDim2.new(0.5, 0, FishingBar.Position.Y.Scale, 0)
+        local g = refresh()
+        if not g or not g.ui or not g.ui.Visible then return end
+        if getgenv().Beo_HoldBar and g.bar then
+            g.bar.Position = UDim2.new(0.5, 0, g.bar.Position.Y.Scale, 0)
         end
         if getgenv().Beo_AutoMiniGame then
-            StepRhythm()
-            StepPhase2()
+            StepRhythm(g)
+            StepPhase2(g)
         end
     end)
 end)
