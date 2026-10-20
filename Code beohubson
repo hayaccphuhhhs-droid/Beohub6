@@ -1278,6 +1278,7 @@ fb.MouseButton1Click:Connect(function()
         end
     end)
 end)
+-- minigame
 local rhythmLanes = {"A", "S", "D"}
 local rhythmKeyMap = {
     A = Enum.KeyCode.A,
