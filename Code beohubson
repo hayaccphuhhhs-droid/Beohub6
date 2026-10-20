@@ -526,6 +526,153 @@ local function addModeRow()
         saveCfg()
     end)
 end
+-- lấy danh sách bait/cần tự động
+local function getBaitList()
+    local list, seen = {}, {}
+    local info = rep:FindFirstChild("Info")
+    local bf = info and info:FindFirstChild("Bait")
+    if bf then
+        for _, c in ipairs(bf:GetChildren()) do
+            if c:IsA("ModuleScript") and not seen[c.Name] then
+                seen[c.Name] = true
+                table.insert(list, c.Name)
+            end
+        end
+    end
+    table.sort(list)
+    return list
+end
+
+local function getRodList()
+    local list, seen = {}, {}
+    local info = rep:FindFirstChild("Info")
+    local inv = info and info:FindFirstChild("Inventory")
+    if inv then
+        for _, c in ipairs(inv:GetChildren()) do
+            if c:IsA("ModuleScript") then
+                local ok, data = pcall(require, c)
+                if ok and type(data) == "table" and data.Ingredient and data.Type == "Fishing Rod" and not seen[c.Name] then
+                    seen[c.Name] = true
+                    table.insert(list, c.Name)
+                end
+            end
+        end
+    end
+    table.sort(list)
+    return list
+end
+
+-- dropdown popup
+local function addDropdown(t, list, get, set)
+    local r = Instance.new("Frame", cont)
+    r.Size = UDim2.new(1, -4, 0, 34)
+    r.BackgroundColor3 = cd
+    r.BorderSizePixel = 0
+    r.LayoutOrder = getNum2()
+    Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
+
+    local l = Instance.new("TextLabel", r)
+    l.Size = UDim2.new(0, 100, 1, 0)
+    l.Position = UDim2.new(0, 12, 0, 0)
+    l.BackgroundTransparency = 1
+    l.Text = t
+    l.TextColor3 = Color3.fromRGB(230, 235, 245)
+    l.Font = Enum.Font.Gotham
+    l.TextSize = 13
+    l.TextXAlignment = Enum.TextXAlignment.Left
+
+    local b = Instance.new("TextButton", r)
+    b.Size = UDim2.new(1, -130, 0, 24)
+    b.Position = UDim2.new(1, -118, 0.5, -12)
+    b.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
+    b.Text = get() ~= "" and get() or "Chọn..."
+    b.TextColor3 = Color3.fromRGB(220, 235, 255)
+    b.Font = Enum.Font.Gotham
+    b.TextSize = 12
+    b.BorderSizePixel = 0
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
+    Instance.new("UIStroke", b).Color = Color3.fromRGB(40, 50, 70)
+
+    local popup = Instance.new("Frame", gui)
+    popup.Size = UDim2.new(0, 220, 0, 240)
+    popup.Position = UDim2.new(0.5, -110, 0.5, -120)
+    popup.BackgroundColor3 = sd
+    popup.BorderSizePixel = 0
+    popup.Visible = false
+    popup.ZIndex = 20
+    Instance.new("UICorner", popup).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIStroke", popup).Color = ac
+
+    local popTitle = Instance.new("TextLabel", popup)
+    popTitle.Size = UDim2.new(1, 0, 0, 26)
+    popTitle.BackgroundTransparency = 1
+    popTitle.Text = t
+    popTitle.TextColor3 = ac
+    popTitle.Font = Enum.Font.GothamBold
+    popTitle.TextSize = 13
+    popTitle.ZIndex = 20
+
+    local closePop = Instance.new("TextButton", popup)
+    closePop.Size = UDim2.new(0, 22, 0, 22)
+    closePop.Position = UDim2.new(1, -26, 0, 2)
+    closePop.BackgroundColor3 = Color3.fromRGB(40, 45, 58)
+    closePop.Text = "x"
+    closePop.TextColor3 = Color3.fromRGB(200, 200, 210)
+    closePop.Font = Enum.Font.GothamBold
+    closePop.TextSize = 12
+    closePop.BorderSizePixel = 0
+    closePop.ZIndex = 20
+    Instance.new("UICorner", closePop).CornerRadius = UDim.new(0, 6)
+    closePop.MouseButton1Click:Connect(function() popup.Visible = false end)
+
+    local scroll = Instance.new("ScrollingFrame", popup)
+    scroll.Size = UDim2.new(1, -12, 1, -34)
+    scroll.Position = UDim2.new(0, 6, 0, 30)
+    scroll.BackgroundTransparency = 1
+    scroll.BorderSizePixel = 0
+    scroll.ScrollBarThickness = 3
+    scroll.ScrollBarImageColor3 = ac
+    scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+    scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    scroll.ZIndex = 20
+    Instance.new("UIListLayout", scroll).Padding = UDim.new(0, 4)
+
+    if #list == 0 then
+        local empty = Instance.new("TextLabel", scroll)
+        empty.Size = UDim2.new(1, -6, 0, 28)
+        empty.BackgroundTransparency = 1
+        empty.Text = "Không có dữ liệu"
+        empty.TextColor3 = Color3.fromRGB(140, 150, 165)
+        empty.Font = Enum.Font.Gotham
+        empty.TextSize = 12
+        empty.ZIndex = 20
+    else
+        for _, item in ipairs(list) do
+            local opt = Instance.new("TextButton", scroll)
+            opt.Size = UDim2.new(1, -6, 0, 28)
+            opt.BackgroundColor3 = Color3.fromRGB(20, 24, 34)
+            opt.Text = item
+            opt.TextColor3 = Color3.fromRGB(220, 235, 255)
+            opt.Font = Enum.Font.Gotham
+            opt.TextSize = 12
+            opt.BorderSizePixel = 0
+            opt.ZIndex = 20
+            Instance.new("UICorner", opt).CornerRadius = UDim.new(0, 6)
+            opt.MouseButton1Click:Connect(function()
+                set(item)
+                b.Text = item
+                popup.Visible = false
+                saveCfg()
+            end)
+        end
+    end
+
+    b.MouseButton1Click:Connect(function()
+        popup.Visible = not popup.Visible
+    end)
+end
+
+-- pages
 pages.Fish = function()
     section("AUTO FISH")
     addToggle("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
@@ -586,35 +733,29 @@ pages.Shop = function()
 
     section("AUTO BUY BAIT")
     addToggle("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
-    addInput("Bait Name", function() return getgenv().BuyBaitName end, function(v) getgenv().BuyBaitName = v end)
+    addDropdown("Bait", getBaitList(), function() return getgenv().BuyBaitName end, function(v) getgenv().BuyBaitName = v end)
     addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
     addSlider("Buy Delay (Sec)", 1, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
     addBtn("Buy Bait Now", function()
         local ev = rep.Events and (rep.Events:FindFirstChild("BuyBait") or rep.Events:FindFirstChild("PurchaseBait") or rep.Events:FindFirstChild("BuyItem"))
-        if ev then
-            ev:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount or 1)
-        end
+        if ev then ev:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount or 1) end
     end)
 
     section("AUTO CRAFT BAIT")
     addToggle("Auto Craft Bait", function() return getgenv().AutoCraftBait end, function(v) getgenv().AutoCraftBait = v end)
-    addInput("Bait Name", function() return getgenv().CraftBaitName end, function(v) getgenv().CraftBaitName = v end)
+    addDropdown("Bait", getBaitList(), function() return getgenv().CraftBaitName end, function(v) getgenv().CraftBaitName = v end)
     addSlider("Craft Amount", 1, 100, function() return getgenv().CraftBaitAmount end, function(v) getgenv().CraftBaitAmount = v end)
     addBtn("Craft Bait Now", function()
         local ev = rep.Events and rep.Events:FindFirstChild("CraftBait")
-        if ev then
-            ev:FireServer(getgenv().CraftBaitName, getgenv().CraftBaitAmount or 1)
-        end
+        if ev then ev:FireServer(getgenv().CraftBaitName, getgenv().CraftBaitAmount or 1) end
     end)
 
     section("AUTO CRAFT ROD")
     addToggle("Auto Craft Rod", function() return getgenv().AutoCraftRod end, function(v) getgenv().AutoCraftRod = v end)
-    addInput("Rod Name", function() return getgenv().CraftRodName end, function(v) getgenv().CraftRodName = v end)
+    addDropdown("Rod", getRodList(), function() return getgenv().CraftRodName end, function(v) getgenv().CraftRodName = v end)
     addBtn("Craft Rod Now", function()
         local ev = rep.Events and rep.Events:FindFirstChild("CraftRod")
-        if ev then
-            ev:FireServer(getgenv().CraftRodName)
-        end
+        if ev then ev:FireServer(getgenv().CraftRodName) end
     end)
 end
 
