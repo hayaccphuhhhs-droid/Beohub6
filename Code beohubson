@@ -1,22 +1,15 @@
+local p = game:GetService("Players")
+local rs = game:GetService("ReplicatedStorage")
+local run = game:GetService("RunService")
+local vim = game:GetService("VirtualInputManager")
+local ts = game:GetService("TeleportService")
+local sg = game:GetService("StarterGui")
+local hs = game:GetService("HttpService")
+local uis = game:GetService("UserInputService")
+local lp = p.LocalPlayer
+local ev = rs:FindFirstChild("Events") or rs
 
-local Players = game:GetService("Players")
-local RS = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local VIM = game:GetService("VirtualInputManager")
-local TS = game:GetService("TeleportService")
-local SG = game:GetService("StarterGui")
-local HS = game:GetService("HttpService")
-local UIS = game:GetService("UserInputService")
-local lp = Players.LocalPlayer
-
-if game.PlaceId ~= 98502499119821 then
-    pcall(function()
-        SG:SetCore("SendNotification", {Title = "WRONG GAME", Text = "Only for Heavyweight Fishing!", Duration = 5})
-    end)
-    return
-end
-
-local _def = {
+local def = {
     AutoSell = false, SellDelay = 5, AutoBuyBait = false, BuyBaitAmount = 1, BuyBaitDelay = 5,
     HoldBar = false, MiniGame = false, Noclip = false,
     AllSkill = false, SkZ = false, SkX = false, SkC = false, SkV = false,
@@ -25,52 +18,53 @@ local _def = {
     SpdNorm = 46, SpdFish = 0, FakeBtn = false,
     AutoEnzo = false, AutoLong = false, BossMode = "Normal"
 }
-for k, v in pairs(_def) do
+for k, v in pairs(def) do
     if getgenv()[k] == nil then getgenv()[k] = v end
 end
 getgenv().ESPList = getgenv().ESPList or {}
 getgenv().ESPPlayerList = getgenv().ESPPlayerList or {}
 getgenv().BeoFishButton = nil
 
--- LOAD CFG
 local fl = "BeoHubCfg"
-local fPath = fl .. "/data.json"
+local fp = fl .. "/data.json"
 
-local function loadCfg()
+local function loadC()
     pcall(function()
-        if isfile(fPath) then
-            local t = HS:JSONDecode(readfile(fPath))
+        if isfile(fp) then
+            local t = hs:JSONDecode(readfile(fp))
             for k, v in pairs(t) do
                 if getgenv()[k] ~= nil then getgenv()[k] = v end
             end
         end
     end)
 end
-loadCfg()
+loadC()
 
 local admins = {"tom_iceren", "ctgthecreator"}
-local function chkAdmin()
-    for _, p in ipairs(Players:GetPlayers()) do
+local function isAdm()
+    for _, pl in ipairs(p:GetPlayers()) do
         for _, a in ipairs(admins) do
-            if p.Name:lower() == a:lower() then return true end
+            if pl.Name:lower() == a:lower() then return true end
         end
     end
     return false
 end
-local function killAll()
+
+local function kill()
     getgenv().AutoSell = false; getgenv().HoldBar = false; getgenv().MiniGame = false
     getgenv().Noclip = false; getgenv().AllSkill = false; getgenv().Water = false
     getgenv().AutoCast = false; getgenv().ESP_T = false; getgenv().ESP_M = false; getgenv().ESP_P = false
     getgenv().AutoEnzo = false; getgenv().AutoLong = false; getgenv().AutoBuyBait = false
 end
-spawn(function()
+
+task.spawn(function()
     while task.wait(1) do
         if getgenv().AntiAdmin then
-            if chkAdmin() and not getgenv().AdminIn then
+            if isAdm() and not getgenv().AdminIn then
                 getgenv().AdminIn = true
-                killAll()
-                pcall(function() SG:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
-            elseif not chkAdmin() then
+                kill()
+                pcall(function() sg:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
+            elseif not isAdm() then
                 getgenv().AdminIn = false
             end
         end
@@ -83,10 +77,10 @@ pcall(function()
     end
 end)
 
-local cMain = Color3.fromRGB(0, 210, 255)
-local cBg = Color3.fromRGB(12, 14, 20)
-local cSide = Color3.fromRGB(16, 18, 26)
-local cCard = Color3.fromRGB(22, 25, 34)
+local cm = Color3.fromRGB(0, 210, 255)
+local cb = Color3.fromRGB(12, 14, 20)
+local cs = Color3.fromRGB(16, 18, 26)
+local cc = Color3.fromRGB(22, 25, 34)
 
 local ui = Instance.new("ScreenGui")
 ui.Name = "BeoHubUI"
@@ -98,170 +92,170 @@ if not ui.Parent then ui.Parent = lp:WaitForChild("PlayerGui") end
 local bub = Instance.new("TextButton", ui)
 bub.Size = UDim2.new(0, 48, 0, 48)
 bub.Position = UDim2.new(0.03, 0, 0.42, 0)
-bub.BackgroundColor3 = cBg
+bub.BackgroundColor3 = cb
 bub.Text = "B"
-bub.TextColor3 = cMain
+bub.TextColor3 = cm
 bub.Font = Enum.Font.GothamBlack
 bub.TextSize = 20
 bub.BorderSizePixel = 0
 bub.AutoButtonColor = false
 Instance.new("UICorner", bub).CornerRadius = UDim.new(1, 0)
-local bStroke = Instance.new("UIStroke", bub)
-bStroke.Color = cMain
-bStroke.Thickness = 2
+local bs = Instance.new("UIStroke", bub)
+bs.Color = cm
+bs.Thickness = 2
 
-local uiMain = Instance.new("Frame", ui)
-uiMain.Size = UDim2.new(0, 400, 0, 320)
-uiMain.Position = UDim2.new(0.5, -200, 0.5, -160)
-uiMain.BackgroundColor3 = cBg
-uiMain.BorderSizePixel = 0
-uiMain.Visible = false
-uiMain.Active = true
-Instance.new("UICorner", uiMain).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", uiMain).Color = Color3.fromRGB(40, 50, 70)
+local main = Instance.new("Frame", ui)
+main.Size = UDim2.new(0, 400, 0, 320)
+main.Position = UDim2.new(0.5, -200, 0.5, -160)
+main.BackgroundColor3 = cb
+main.BorderSizePixel = 0
+main.Visible = false
+main.Active = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", main).Color = Color3.fromRGB(40, 50, 70)
 
-local tBar = Instance.new("Frame", uiMain)
-tBar.Size = UDim2.new(1, 0, 0, 38)
-tBar.BackgroundColor3 = cSide
-tBar.BorderSizePixel = 0
-Instance.new("UICorner", tBar).CornerRadius = UDim.new(0, 12)
+local tb = Instance.new("Frame", main)
+tb.Size = UDim2.new(1, 0, 0, 38)
+tb.BackgroundColor3 = cs
+tb.BorderSizePixel = 0
+Instance.new("UICorner", tb).CornerRadius = UDim.new(0, 12)
 
-local aLine = Instance.new("Frame", tBar)
-aLine.Size = UDim2.new(0, 3, 0, 18)
-aLine.Position = UDim2.new(0, 12, 0.5, -9)
-aLine.BackgroundColor3 = cMain
-aLine.BorderSizePixel = 0
-Instance.new("UICorner", aLine).CornerRadius = UDim.new(1, 0)
+local al = Instance.new("Frame", tb)
+al.Size = UDim2.new(0, 3, 0, 18)
+al.Position = UDim2.new(0, 12, 0.5, -9)
+al.BackgroundColor3 = cm
+al.BorderSizePixel = 0
+Instance.new("UICorner", al).CornerRadius = UDim.new(1, 0)
 
-local tTxt = Instance.new("TextLabel", tBar)
-tTxt.Size = UDim2.new(1, -80, 1, 0)
-tTxt.Position = UDim2.new(0, 22, 0, 0)
-tTxt.BackgroundTransparency = 1
-tTxt.Text = "BeoHub v7"
-tTxt.TextColor3 = Color3.fromRGB(240, 245, 255)
-tTxt.Font = Enum.Font.GothamBold
-tTxt.TextSize = 15
-tTxt.TextXAlignment = Enum.TextXAlignment.Left
+local tt = Instance.new("TextLabel", tb)
+tt.Size = UDim2.new(1, -80, 1, 0)
+tt.Position = UDim2.new(0, 22, 0, 0)
+tt.BackgroundTransparency = 1
+tt.Text = "BeoHub v7"
+tt.TextColor3 = Color3.fromRGB(240, 245, 255)
+tt.Font = Enum.Font.GothamBold
+tt.TextSize = 15
+tt.TextXAlignment = Enum.TextXAlignment.Left
 
-local btnClose = Instance.new("TextButton", tBar)
-btnClose.Size = UDim2.new(0, 28, 0, 28)
-btnClose.Position = UDim2.new(1, -34, 0.5, -14)
-btnClose.BackgroundColor3 = Color3.fromRGB(30, 34, 48)
-btnClose.Text = "x"
-btnClose.TextColor3 = Color3.fromRGB(200, 200, 210)
-btnClose.Font = Enum.Font.GothamBold
-btnClose.TextSize = 16
-btnClose.BorderSizePixel = 0
-Instance.new("UICorner", btnClose).CornerRadius = UDim.new(0, 8)
+local bc = Instance.new("TextButton", tb)
+bc.Size = UDim2.new(0, 28, 0, 28)
+bc.Position = UDim2.new(1, -34, 0.5, -14)
+bc.BackgroundColor3 = Color3.fromRGB(30, 34, 48)
+bc.Text = "x"
+bc.TextColor3 = Color3.fromRGB(200, 200, 210)
+bc.Font = Enum.Font.GothamBold
+bc.TextSize = 16
+bc.BorderSizePixel = 0
+Instance.new("UICorner", bc).CornerRadius = UDim.new(0, 8)
 
-local uiSide = Instance.new("Frame", uiMain)
-uiSide.Size = UDim2.new(0, 52, 1, -46)
-uiSide.Position = UDim2.new(0, 6, 0, 42)
-uiSide.BackgroundColor3 = cSide
-uiSide.BorderSizePixel = 0
-Instance.new("UICorner", uiSide).CornerRadius = UDim.new(0, 10)
+local side = Instance.new("Frame", main)
+side.Size = UDim2.new(0, 52, 1, -46)
+side.Position = UDim2.new(0, 6, 0, 42)
+side.BackgroundColor3 = cs
+side.BorderSizePixel = 0
+Instance.new("UICorner", side).CornerRadius = UDim.new(0, 10)
 
-local uiContent = Instance.new("ScrollingFrame", uiMain)
-uiContent.Size = UDim2.new(1, -70, 1, -50)
-uiContent.Position = UDim2.new(0, 64, 0, 44)
-uiContent.BackgroundTransparency = 1
-uiContent.BorderSizePixel = 0
-uiContent.ScrollBarThickness = 3
-uiContent.ScrollBarImageColor3 = cMain
-uiContent.CanvasSize = UDim2.new(0, 0, 0, 0)
-uiContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-local uList = Instance.new("UIListLayout", uiContent)
-uList.Padding = UDim.new(0, 6)
-uList.SortOrder = Enum.SortOrder.LayoutOrder
-uList.HorizontalAlignment = Enum.HorizontalAlignment.Center
+local content = Instance.new("ScrollingFrame", main)
+content.Size = UDim2.new(1, -70, 1, -50)
+content.Position = UDim2.new(0, 64, 0, 44)
+content.BackgroundTransparency = 1
+content.BorderSizePixel = 0
+content.ScrollBarThickness = 3
+content.ScrollBarImageColor3 = cm
+content.CanvasSize = UDim2.new(0, 0, 0, 0)
+content.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local ul = Instance.new("UIListLayout", content)
+ul.Padding = UDim.new(0, 6)
+ul.SortOrder = Enum.SortOrder.LayoutOrder
+ul.HorizontalAlignment = Enum.HorizontalAlignment.Center
 
-local lNum = 0
-local function nxOrder() lNum = lNum + 1 return lNum end
+local ln = 0
+local function nO() ln = ln + 1 return ln end
 
-local function dragMe(obj, isMain)
-    local dragging, startPos, startFrame
-    obj.InputBegan:Connect(function(i)
+local function drag(o, isM)
+    local dr, sp, sf
+    o.InputBegan:Connect(function(i)
         if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            startPos = i.Position
-            startFrame = (isMain and uiMain or obj).Position
+            dr = true
+            sp = i.Position
+            sf = (isM and main or o).Position
             i.Changed:Connect(function()
-                if i.UserInputState == Enum.UserInputState.End then dragging = false end
+                if i.UserInputState == Enum.UserInputState.End then dr = false end
             end)
         end
     end)
-    UIS.InputChanged:Connect(function(i)
-        if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-            local d = i.Position - startPos
-            local t = isMain and uiMain or obj
-            t.Position = UDim2.new(startFrame.X.Scale, startFrame.X.Offset + d.X, startFrame.Y.Scale, startFrame.Y.Offset + d.Y)
+    uis.InputChanged:Connect(function(i)
+        if dr and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+            local d = i.Position - sp
+            local t = isM and main or o
+            t.Position = UDim2.new(sf.X.Scale, sf.X.Offset + d.X, sf.Y.Scale, sf.Y.Offset + d.Y)
         end
     end)
 end
-dragMe(tBar, true)
-dragMe(bub, false)
+drag(tb, true)
+drag(bub, false)
 
-local isOp = false
-local function tglUI(v)
-    isOp = v
-    uiMain.Visible = isOp
-    bStroke.Color = isOp and Color3.fromRGB(80, 255, 180) or cMain
-    bub.Text = isOp and "x" or "B"
+local op = false
+local function tgl(v)
+    op = v
+    main.Visible = op
+    bs.Color = op and Color3.fromRGB(80, 255, 180) or cm
+    bub.Text = op and "x" or "B"
 end
-bub.MouseButton1Click:Connect(function() tglUI(not isOp) end)
-btnClose.MouseButton1Click:Connect(function() tglUI(false) end)
+bub.MouseButton1Click:Connect(function() tgl(not op) end)
+bc.MouseButton1Click:Connect(function() tgl(false) end)
 
 local pages, tabs = {}, {}
-local function clearContent()
-    lNum = 0
-    for _, c in ipairs(uiContent:GetChildren()) do
+local function wipe()
+    ln = 0
+    for _, c in ipairs(content:GetChildren()) do
         if not c:IsA("UIListLayout") then c:Destroy() end
     end
 end
 
-local function openPage(name)
-    clearContent()
-    for n, b in pairs(tabs) do
-        b.BackgroundColor3 = (n == name) and Color3.fromRGB(28, 40, 55) or Color3.fromRGB(16, 18, 26)
+local function show(n)
+    wipe()
+    for name, b in pairs(tabs) do
+        b.BackgroundColor3 = (name == n) and Color3.fromRGB(28, 40, 55) or Color3.fromRGB(16, 18, 26)
         local ic = b:FindFirstChild("Icon")
-        if ic then ic.TextColor3 = (n == name) and cMain or Color3.fromRGB(120, 130, 150) end
+        if ic then ic.TextColor3 = (name == n) and cm or Color3.fromRGB(120, 130, 150) end
     end
-    if pages[name] then pages[name]() end
+    if pages[n] then pages[n]() end
 end
 
-local function makeTab(name, icon, order)
-    local b = Instance.new("TextButton", uiSide)
+local function mkTab(n, ic, od)
+    local b = Instance.new("TextButton", side)
     b.Size = UDim2.new(1, -8, 0, 40)
-    b.Position = UDim2.new(0, 4, 0, 4 + (order - 1) * 44)
+    b.Position = UDim2.new(0, 4, 0, 4 + (od - 1) * 44)
     b.BackgroundColor3 = Color3.fromRGB(16, 18, 26)
     b.Text = ""
     b.BorderSizePixel = 0
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
-    local ic = Instance.new("TextLabel", b)
-    ic.Name = "Icon"
-    ic.Size = UDim2.new(1, 0, 1, 0)
-    ic.BackgroundTransparency = 1
-    ic.Text = icon
-    ic.TextColor3 = Color3.fromRGB(120, 130, 150)
-    ic.Font = Enum.Font.GothamBold
-    ic.TextSize = 16
-    tabs[name] = b
-    b.MouseButton1Click:Connect(function() openPage(name) end)
+    local i = Instance.new("TextLabel", b)
+    i.Name = "Icon"
+    i.Size = UDim2.new(1, 0, 1, 0)
+    i.BackgroundTransparency = 1
+    i.Text = ic
+    i.TextColor3 = Color3.fromRGB(120, 130, 150)
+    i.Font = Enum.Font.GothamBold
+    i.TextSize = 16
+    tabs[n] = b
+    b.MouseButton1Click:Connect(function() show(n) end)
 end
 
-local function addSec(txt)
-    local l = Instance.new("TextLabel", uiContent)
+local function sec(t)
+    local l = Instance.new("TextLabel", content)
     l.Size = UDim2.new(1, -4, 0, 22)
     l.BackgroundTransparency = 1
-    l.Text = txt
-    l.TextColor3 = cMain
+    l.Text = t
+    l.TextColor3 = cm
     l.Font = Enum.Font.GothamBold
     l.TextSize = 12
     l.TextXAlignment = Enum.TextXAlignment.Left
-    l.LayoutOrder = nxOrder()
+    l.LayoutOrder = nO()
 end
 
-local function saveCfg()
+local function saveC()
     pcall(function()
         if not isfolder(fl) then makefolder(fl) end
         local t = {}
@@ -270,22 +264,22 @@ local function saveCfg()
                 if k ~= "AntiAdmin" and k ~= "AdminIn" then t[k] = v end
             end
         end
-        writefile(fPath, HS:JSONEncode(t))
+        writefile(fp, hs:JSONEncode(t))
     end)
 end
 
-local function addTgl(txt, getV, setV)
-    local r = Instance.new("Frame", uiContent)
+local function tglBtn(t, g, s)
+    local r = Instance.new("Frame", content)
     r.Size = UDim2.new(1, -4, 0, 34)
-    r.BackgroundColor3 = cCard
+    r.BackgroundColor3 = cc
     r.BorderSizePixel = 0
-    r.LayoutOrder = nxOrder()
+    r.LayoutOrder = nO()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", r)
     l.Size = UDim2.new(1, -70, 1, 0)
     l.Position = UDim2.new(0, 12, 0, 0)
     l.BackgroundTransparency = 1
-    l.Text = txt
+    l.Text = t
     l.TextColor3 = Color3.fromRGB(230, 235, 245)
     l.Font = Enum.Font.Gotham
     l.TextSize = 13
@@ -298,9 +292,9 @@ local function addTgl(txt, getV, setV)
     b.TextSize = 11
     Instance.new("UICorner", b).CornerRadius = UDim.new(1, 0)
     local function ref()
-        if getV() then
+        if g() then
             b.Text = "ON"
-            b.BackgroundColor3 = cMain
+            b.BackgroundColor3 = cm
             b.TextColor3 = Color3.fromRGB(10, 14, 20)
         else
             b.Text = "OFF"
@@ -310,38 +304,38 @@ local function addTgl(txt, getV, setV)
     end
     ref()
     b.MouseButton1Click:Connect(function()
-        setV(not getV())
+        s(not g())
         ref()
-        saveCfg()
+        saveC()
     end)
 end
 
-local function addBtn(txt, cb)
-    local b = Instance.new("TextButton", uiContent)
+local function btn(t, cb)
+    local b = Instance.new("TextButton", content)
     b.Size = UDim2.new(1, -4, 0, 34)
     b.BackgroundColor3 = Color3.fromRGB(28, 36, 52)
-    b.Text = txt
+    b.Text = t
     b.TextColor3 = Color3.fromRGB(210, 230, 255)
     b.Font = Enum.Font.GothamBold
     b.TextSize = 12
     b.BorderSizePixel = 0
-    b.LayoutOrder = nxOrder()
+    b.LayoutOrder = nO()
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function() pcall(cb) end)
 end
 
-local function addSlider(txt, minV, maxV, getV, setV)
-    local r = Instance.new("Frame", uiContent)
+local function sld(t, mn, mx, g, s)
+    local r = Instance.new("Frame", content)
     r.Size = UDim2.new(1, -4, 0, 50)
-    r.BackgroundColor3 = cCard
+    r.BackgroundColor3 = cc
     r.BorderSizePixel = 0
-    r.LayoutOrder = nxOrder()
+    r.LayoutOrder = nO()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", r)
     l.Size = UDim2.new(1, -20, 0, 20)
     l.Position = UDim2.new(0, 10, 0, 4)
     l.BackgroundTransparency = 1
-    l.Text = txt .. " : " .. tostring(getV())
+    l.Text = t .. " : " .. tostring(g())
     l.TextColor3 = Color3.fromRGB(230, 235, 245)
     l.Font = Enum.Font.Gotham
     l.TextSize = 12
@@ -353,41 +347,41 @@ local function addSlider(txt, minV, maxV, getV, setV)
     bar.BorderSizePixel = 0
     Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
     local fill = Instance.new("Frame", bar)
-    fill.Size = UDim2.new((getV() - minV) / (maxV - minV), 0, 1, 0)
-    fill.BackgroundColor3 = cMain
+    fill.Size = UDim2.new((g() - mn) / (mx - mn), 0, 1, 0)
+    fill.BackgroundColor3 = cm
     fill.BorderSizePixel = 0
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
-    local drag = Instance.new("TextButton", bar)
-    drag.Size = UDim2.new(1, 0, 1, 0)
-    drag.BackgroundTransparency = 1
-    drag.Text = ""
-    drag.MouseButton1Down:Connect(function()
-        local dragging = true
-        UIS.InputChanged:Connect(function(i)
-            if dragging and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-                local mouseX = i.Position.X
-                local rel = math.clamp((mouseX - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
-                local val = math.floor(minV + (maxV - minV) * rel + 0.5)
-                fill.Size = UDim2.new(rel, 0, 1, 0)
-                l.Text = txt .. " : " .. val
-                setV(val)
-                saveCfg()
+    local dr = Instance.new("TextButton", bar)
+    dr.Size = UDim2.new(1, 0, 1, 0)
+    dr.BackgroundTransparency = 1
+    dr.Text = ""
+    dr.MouseButton1Down:Connect(function()
+        local dg = true
+        uis.InputChanged:Connect(function(i)
+            if dg and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
+                local mx = i.Position.X
+                local rl = math.clamp((mx - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
+                local vl = math.floor(mn + (mx - mn) * rl + 0.5)
+                fill.Size = UDim2.new(rl, 0, 1, 0)
+                l.Text = t .. " : " .. vl
+                s(vl)
+                saveC()
             end
         end)
-        UIS.InputEnded:Connect(function(i)
+        uis.InputEnded:Connect(function(i)
             if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-                dragging = false
+                dg = false
             end
         end)
     end)
 end
 
-local function addSkillRow()
-    local r = Instance.new("Frame", uiContent)
+local function skRow()
+    local r = Instance.new("Frame", content)
     r.Size = UDim2.new(1, -4, 0, 34)
-    r.BackgroundColor3 = cCard
+    r.BackgroundColor3 = cc
     r.BorderSizePixel = 0
-    r.LayoutOrder = nxOrder()
+    r.LayoutOrder = nO()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local sk = {"Z", "X", "C", "V"}
     for i, k in ipairs(sk) do
@@ -398,11 +392,11 @@ local function addSkillRow()
         b.Font = Enum.Font.GothamBold
         b.TextSize = 12
         Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
-        local function sync()
+        local function sy()
             local f = "Sk"..k
             if getgenv()[f] then
                 b.Text = k .. " : ON"
-                b.BackgroundColor3 = cMain
+                b.BackgroundColor3 = cm
                 b.TextColor3 = Color3.fromRGB(10, 14, 20)
             else
                 b.Text = k .. " : OFF"
@@ -410,21 +404,21 @@ local function addSkillRow()
                 b.TextColor3 = Color3.fromRGB(140, 150, 165)
             end
         end
-        sync()
+        sy()
         b.MouseButton1Click:Connect(function()
             getgenv()["Sk"..k] = not getgenv()["Sk"..k]
-            sync()
-            saveCfg()
+            sy()
+            saveC()
         end)
     end
 end
 
-local function addModeRow()
-    local r = Instance.new("Frame", uiContent)
+local function modeRow()
+    local r = Instance.new("Frame", content)
     r.Size = UDim2.new(1, -4, 0, 34)
-    r.BackgroundColor3 = cCard
+    r.BackgroundColor3 = cc
     r.BorderSizePixel = 0
-    r.LayoutOrder = nxOrder()
+    r.LayoutOrder = nO()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local t = Instance.new("TextLabel", r)
     t.Size = UDim2.new(0, 60, 1, 0)
@@ -435,11 +429,11 @@ local function addModeRow()
     t.Font = Enum.Font.Gotham
     t.TextSize = 13
     t.TextXAlignment = Enum.TextXAlignment.Left
-    local modes = {"Normal", "Hard", "Nightmare"}
+    local md = {"Normal", "Hard", "Nightmare"}
     local b = Instance.new("TextButton", r)
     b.Size = UDim2.new(0, 100, 0, 24)
     b.Position = UDim2.new(1, -112, 0.5, -12)
-    b.BackgroundColor3 = cMain
+    b.BackgroundColor3 = cm
     b.Text = getgenv().BossMode or "Normal"
     b.TextColor3 = Color3.fromRGB(10, 14, 20)
     b.Font = Enum.Font.GothamBold
@@ -447,40 +441,40 @@ local function addModeRow()
     b.BorderSizePixel = 0
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
     b.MouseButton1Click:Connect(function()
-        local idx = table.find(modes, getgenv().BossMode)
-        if not idx then idx = 1 else idx = (idx % #modes) + 1 end
-        getgenv().BossMode = modes[idx]
+        local ix = table.find(md, getgenv().BossMode)
+        if not ix then ix = 1 else ix = (ix % #md) + 1 end
+        getgenv().BossMode = md[ix]
         b.Text = getgenv().BossMode
-        saveCfg()
+        saveC()
     end)
 end
 pages.Fish = function()
-    addSec("AUTO FISH")
-    addTgl("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
-    addTgl("Hold Bar", function() return getgenv().HoldBar end, function(v) getgenv().HoldBar = v end)
-    addTgl("Fake Fish Btn", function() return getgenv().FakeBtn end, function(v)
+    sec("AUTO FISH")
+    tglBtn("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
+    tglBtn("Hold Bar", function() return getgenv().HoldBar end, function(v) getgenv().HoldBar = v end)
+    tglBtn("Fake Fish Btn", function() return getgenv().FakeBtn end, function(v)
         getgenv().FakeBtn = v
         if getgenv().BeoFishButton then getgenv().BeoFishButton.Visible = v end
     end)
-    addSec("SKILLS")
-    addTgl("All Skills", function() return getgenv().AllSkill end, function(v) getgenv().AllSkill = v end)
-    addSkillRow()
+    sec("SKILLS")
+    tglBtn("All Skills", function() return getgenv().AllSkill end, function(v) getgenv().AllSkill = v end)
+    skRow()
 end
 
 pages.Boss = function()
-    addSec("BOSS SETTINGS")
-    addModeRow()
-    addSec("AUTO BOSS")
-    addTgl("Auto Enzo", function() return getgenv().AutoEnzo end, function(v) 
+    sec("BOSS SETTINGS")
+    modeRow()
+    sec("AUTO BOSS")
+    tglBtn("Auto Enzo", function() return getgenv().AutoEnzo end, function(v) 
         getgenv().AutoEnzo = v
         if v then getgenv().AutoLong = false end
     end)
-    addTgl("Auto Long DiaoHai", function() return getgenv().AutoLong end, function(v) 
+    tglBtn("Auto Long DiaoHai", function() return getgenv().AutoLong end, function(v) 
         getgenv().AutoLong = v
         if v then getgenv().AutoEnzo = false end
     end)
-    addSec("MINIGAME")
-    addTgl("Auto MiniGame", function() return getgenv().MiniGame end, function(v) getgenv().MiniGame = v end)
+    sec("MINIGAME")
+    tglBtn("Auto MiniGame", function() return getgenv().MiniGame end, function(v) getgenv().MiniGame = v end)
 end
 
 local isl = {
@@ -491,10 +485,10 @@ local isl = {
     {"Mystic Reef", -2657, 6, -1303},
 }
 pages.TP = function()
-    addSec("TELEPORT")
+    sec("TELEPORT")
     for _, v in ipairs(isl) do
         local n, x, y, z = v[1], v[2], v[3], v[4]
-        addBtn(n, function()
+        btn(n, function()
             local c = lp.Character
             if c and c:FindFirstChild("HumanoidRootPart") then
                 c.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
@@ -504,31 +498,31 @@ pages.TP = function()
 end
 
 pages.Shop = function()
-    addSec("AUTO SELL")
-    addTgl("Auto Sell All", function() return getgenv().AutoSell end, function(v) getgenv().AutoSell = v end)
-    addSlider("Sell Delay (Sec)", 1, 60, function() return getgenv().SellDelay end, function(v) getgenv().SellDelay = v end)
-    addBtn("Sell All Now", function()
-        if RS.Events and RS.Events.SellFish then RS.Events.SellFish:FireServer("All") end
+    sec("AUTO SELL")
+    tglBtn("Auto Sell All", function() return getgenv().AutoSell end, function(v) getgenv().AutoSell = v end)
+    sld("Sell Delay (Sec)", 1, 60, function() return getgenv().SellDelay end, function(v) getgenv().SellDelay = v end)
+    btn("Sell All Now", function()
+        if rs.Events and rs.Events.SellFish then rs.Events.SellFish:FireServer("All") end
     end)
 
-    addSec("AUTO BUY BAIT")
-    addTgl("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
-    addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
-    addSlider("Buy Delay (Sec)", 5, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
+    sec("AUTO BUY BAIT")
+    tglBtn("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
+    sld("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
+    sld("Buy Delay (Sec)", 5, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
 
-    local Info = RS:FindFirstChild("Info")
-    local bFolder = Info and Info:FindFirstChild("Bait")
-    if bFolder then
-        for _, v in ipairs(bFolder:GetChildren()) do
+    local Info = rs:FindFirstChild("Info")
+    local bF = Info and Info:FindFirstChild("Bait")
+    if bF then
+        for _, v in ipairs(bF:GetChildren()) do
             if v:IsA("ModuleScript") then
                 local ok, d = pcall(require, v)
                 if ok and type(d) == "table" and not d.Ingredient then
-                    addBtn("Buy " .. v.Name, function()
-                        local buyEv = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
-                        if buyEv then
-                            buyEv:FireServer(v.Name, getgenv().BuyBaitAmount)
+                    btn("Buy " .. v.Name, function()
+                        local be = rs.Events:FindFirstChild("BuyBait") or rs.Events:FindFirstChild("Bait")
+                        if be then
+                            be:FireServer(v.Name, getgenv().BuyBaitAmount)
                         else
-                            RS.Events.CraftBait:FireServer(v.Name, getgenv().BuyBaitAmount)
+                            rs.Events.CraftBait:FireServer(v.Name, getgenv().BuyBaitAmount)
                         end
                     end)
                 end
@@ -536,92 +530,92 @@ pages.Shop = function()
         end
     end
 
-    addSec("CRAFT BAIT")
+    sec("CRAFT BAIT")
     local hasB = false
-    if bFolder then
-        for _, v in ipairs(bFolder:GetChildren()) do
+    if bF then
+        for _, v in ipairs(bF:GetChildren()) do
             if v:IsA("ModuleScript") then
                 local ok, d = pcall(require, v)
                 if ok and type(d) == "table" and d.Ingredient then
                     hasB = true
-                    addBtn("Craft " .. v.Name, function()
-                        RS.Events.CraftBait:FireServer(v.Name, 10)
+                    btn("Craft " .. v.Name, function()
+                        rs.Events.CraftBait:FireServer(v.Name, 10)
                     end)
                 end
             end
         end
     end
-    if not hasB then addSec("(No craftable bait)") end
+    if not hasB then sec("(No craftable bait)") end
 
-    addSec("CRAFT ROD")
-    local iFolder = Info and Info:FindFirstChild("Inventory")
+    sec("CRAFT ROD")
+    local iF = Info and Info:FindFirstChild("Inventory")
     local hasR = false
-    if iFolder then
-        for _, v in ipairs(iFolder:GetChildren()) do
+    if iF then
+        for _, v in ipairs(iF:GetChildren()) do
             if v:IsA("ModuleScript") then
                 local ok, d = pcall(require, v)
                 if ok and type(d) == "table" and d.Ingredient and d.Type == "Fishing Rod" then
                     hasR = true
-                    addBtn("Craft " .. v.Name, function()
-                        RS.Events.CraftRod:FireServer(v.Name)
+                    btn("Craft " .. v.Name, function()
+                        rs.Events.CraftRod:FireServer(v.Name)
                     end)
                 end
             end
         end
     end
-    if not hasR then addSec("(No craftable rod)") end
+    if not hasR then sec("(No craftable rod)") end
 end
 
 pages.ESP = function()
-    addSec("ESP")
-    addTgl("Taoist", function() return getgenv().ESP_T end, function(v) getgenv().ESP_T = v end)
-    addTgl("Maoshan", function() return getgenv().ESP_M end, function(v) getgenv().ESP_M = v end)
-    addTgl("Player", function() return getgenv().ESP_P end, function(v) getgenv().ESP_P = v end)
+    sec("ESP")
+    tglBtn("Taoist", function() return getgenv().ESP_T end, function(v) getgenv().ESP_T = v end)
+    tglBtn("Maoshan", function() return getgenv().ESP_M end, function(v) getgenv().ESP_M = v end)
+    tglBtn("Player", function() return getgenv().ESP_P end, function(v) getgenv().ESP_P = v end)
 end
 
 pages.More = function()
-    addSec("PLAYER")
-    addTgl("Noclip", function() return getgenv().Noclip end, function(v) getgenv().Noclip = v end)
-    addTgl("Speed Control", function() return getgenv().SpdCtrl end, function(v) getgenv().SpdCtrl = v end)
-    addTgl("Walk on Water", function() return getgenv().Water end, function(v) getgenv().Water = v end)
-    addBtn("Fix Lag", function()
+    sec("PLAYER")
+    tglBtn("Noclip", function() return getgenv().Noclip end, function(v) getgenv().Noclip = v end)
+    tglBtn("Speed Control", function() return getgenv().SpdCtrl end, function(v) getgenv().SpdCtrl = v end)
+    tglBtn("Walk on Water", function() return getgenv().Water end, function(v) getgenv().Water = v end)
+    btn("Fix Lag", function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/Beohub/refs/heads/main/Fix%20lag"))()
     end)
-    addBtn("Copy Coord", function()
+    btn("Copy Coord", function()
         local c = lp.Character
         if c and c:FindFirstChild("HumanoidRootPart") then
-            local p = c.HumanoidRootPart.Position
-            setclipboard(math.floor(p.X) .. ", " .. math.floor(p.Y) .. ", " .. math.floor(p.Z))
+            local pos = c.HumanoidRootPart.Position
+            setclipboard(math.floor(pos.X) .. ", " .. math.floor(pos.Y) .. ", " .. math.floor(pos.Z))
         end
     end)
-    addSec("SERVER")
-    addBtn("Hop Low Players", function()
-        local d = HS:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
-        local best, minP = nil, 999
+    sec("SERVER")
+    btn("Hop Low Players", function()
+        local d = hs:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        local b, mp = nil, 999
         if d and d.data then
             for _, s in ipairs(d.data) do
-                if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
-                    minP = s.playing best = s.id
+                if s.playing < mp and s.playing > 0 and s.id ~= game.JobId then
+                    mp = s.playing b = s.id
                 end
             end
         end
-        if best then TS:TeleportToPlaceInstance(game.PlaceId, best, lp) end
+        if b then ts:TeleportToPlaceInstance(game.PlaceId, b, lp) end
     end)
-    addBtn("Copy JobId", function() if game.JobId ~= "" then setclipboard(game.JobId) end end)
+    btn("Copy JobId", function() if game.JobId ~= "" then setclipboard(game.JobId) end end)
 end
 
-makeTab("Fish", "F", 1)
-makeTab("Boss", "B", 2)
-makeTab("Shop", "S", 3)
-makeTab("TP", "T", 4)
-makeTab("ESP", "E", 5)
-makeTab("More", "M", 6)
-openPage("Fish")
+mkTab("Fish", "F", 1)
+mkTab("Boss", "B", 2)
+mkTab("Shop", "S", 3)
+mkTab("TP", "T", 4)
+mkTab("ESP", "E", 5)
+mkTab("More", "M", 6)
+show("Fish")
 local rem = {"UseSkill","CastSkill","Skill","ActivateSkill","PlaySkill","SkillActivate","DoSkill"}
 local function getR()
-    local ev = RS:FindFirstChild("Events") or RS
+    local e = rs:FindFirstChild("Events") or rs
     for _, n in ipairs(rem) do
-        local r = ev:FindFirstChild(n, true)
+        local r = e:FindFirstChild(n, true)
         if r and (r:IsA("RemoteEvent") or r:IsA("RemoteFunction")) then return r end
     end
 end
@@ -629,13 +623,13 @@ local skR = getR()
 local function useSk(k)
     if skR then pcall(function() skR:FireServer(k) end) return end
     pcall(function()
-        VIM:SendKeyEvent(true, Enum.KeyCode[k], false, game)
+        vim:SendKeyEvent(true, Enum.KeyCode[k], false, game)
         task.wait(0.05)
-        VIM:SendKeyEvent(false, Enum.KeyCode[k], false, game)
+        vim:SendKeyEvent(false, Enum.KeyCode[k], false, game)
     end)
 end
 
-spawn(function()
+task.spawn(function()
     while true do
         task.wait(0.5 + math.random() * 0.3)
         pcall(function()
@@ -643,33 +637,32 @@ spawn(function()
             if not c then return end
             local h = c:FindFirstChildOfClass("Humanoid")
             if not h or h.Health <= 0 then return end
-            local function gap() task.wait(0.15 + math.random() * 0.05) end
-            
+            local function gp() task.wait(0.15 + math.random() * 0.05) end
             if getgenv().AllSkill then
-                useSk("Z") gap() useSk("X") gap() useSk("C") gap() useSk("V")
+                useSk("Z") gp() useSk("X") gp() useSk("C") gp() useSk("V")
             else
-                if getgenv().SkZ then useSk("Z") gap() end
-                if getgenv().SkX then useSk("X") gap() end
-                if getgenv().SkC then useSk("C") gap() end
+                if getgenv().SkZ then useSk("Z") gp() end
+                if getgenv().SkX then useSk("X") gp() end
+                if getgenv().SkC then useSk("C") gp() end
                 if getgenv().SkV then useSk("V") end
             end
         end)
     end
 end)
 
-spawn(function()
+task.spawn(function()
     while true do
         task.wait(0.3 + math.random() * 0.2)
         if getgenv().AutoCast then
             pcall(function()
                 local c = lp.Character
-                local gui = lp.PlayerGui:FindFirstChild("MainGui")
-                if c and gui then
-                    local fish = c:GetAttribute("Fishing")
-                    local fUI = gui:FindFirstChild("Fishing")
-                    if not fish and (not fUI or not fUI.Visible) then
-                        if RS.Events and RS.Events:FindFirstChild("Fishing") then
-                            RS.Events.Fishing:FireServer()
+                local g = lp.PlayerGui:FindFirstChild("MainGui")
+                if c and g then
+                    local fs = c:GetAttribute("Fishing")
+                    local fU = g:FindFirstChild("Fishing")
+                    if not fs and (not fU or not fU.Visible) then
+                        if rs.Events and rs.Events:FindFirstChild("Fishing") then
+                            rs.Events.Fishing:FireServer()
                         end
                     end
                 end
@@ -678,12 +671,12 @@ spawn(function()
     end
 end)
 
-spawn(function()
+task.spawn(function()
     while true do
         if getgenv().AutoSell then
             pcall(function()
-                if RS.Events and RS.Events:FindFirstChild("SellFish") then
-                    RS.Events.SellFish:FireServer("All")
+                if rs.Events and rs.Events:FindFirstChild("SellFish") then
+                    rs.Events.SellFish:FireServer("All")
                 end
             end)
             task.wait(getgenv().SellDelay or 5)
@@ -693,45 +686,20 @@ spawn(function()
     end
 end)
 
-spawn(function()
-    local lastB = 0
-    while true do
-        task.wait(0.5)
-        if getgenv().AutoBuyBait and getgenv().BuyBaitName ~= "" then
-            local now = tick()
-            if now - lastB >= (getgenv().BuyBaitDelay or 5) then
-                lastB = now
-                pcall(function()
-                    local ev = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
-                    if ev then
-                        ev:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount)
-                    end
-                end)
-            end
-        end
-    end
-end)
-
--- AUTO REEL (CỨNG NGẮT Ở GIỮA)
-local prog = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
-
-spawn(function()
+-- Auto reel
+local prg = rs:FindFirstChild("Events") and rs.Events:FindFirstChild("UpdateFishProgression")
+task.spawn(function()
     while task.wait(0.05) do
         if getgenv().HoldBar then
-            local gui = lp.PlayerGui:FindFirstChild("MainGui")
-            local fUI = gui and gui:FindFirstChild("Fishing")
-            
-            if fUI and fUI.Visible then
-                local bF = fUI:FindFirstChild("BarFrame")
+            local g = lp.PlayerGui:FindFirstChild("MainGui")
+            local fU = g and g:FindFirstChild("Fishing")
+            if fU and fU.Visible then
+                local bF = fU:FindFirstChild("BarFrame")
                 local b = bF and bF:FindFirstChild("Bar")
-                
                 if b then
                     b.Position = UDim2.new(0.5, 0, b.Position.Y.Scale, 0)
                 end
-                
-                if prog then
-                    pcall(function() prog:FireServer() end)
-                end
+                if prg then pcall(function() prg:FireServer() end) end
             end
         end
         task.wait(0.05)
@@ -739,7 +707,7 @@ spawn(function()
 end)
 
 local oldW, wSt = {}, false
-spawn(function()
+task.spawn(function()
     while task.wait(0.3) do
         local on = getgenv().Water
         if on and not wSt then
@@ -759,17 +727,17 @@ spawn(function()
     end
 end)
 
-spawn(function()
+task.spawn(function()
     while task.wait(0.15) do
         if getgenv().SpdCtrl then
             pcall(function()
                 local c = lp.Character
                 local h = c and c:FindFirstChildOfClass("Humanoid")
                 if not h then return end
-                local gui = lp.PlayerGui:FindFirstChild("MainGui")
-                local fUI = gui and gui:FindFirstChild("Fishing")
-                local fish = c:GetAttribute("Fishing")
-                if (fUI and fUI.Visible) or fish then
+                local g = lp.PlayerGui:FindFirstChild("MainGui")
+                local fU = g and g:FindFirstChild("Fishing")
+                local fs = c:GetAttribute("Fishing")
+                if (fU and fU.Visible) or fs then
                     h.WalkSpeed = getgenv().SpdFish or 0
                 elseif not getgenv().Noclip then
                     h.WalkSpeed = getgenv().SpdNorm or 46
@@ -779,7 +747,7 @@ spawn(function()
     end
 end)
 
-RunService.Stepped:Connect(function()
+run.Stepped:Connect(function()
     pcall(function()
         local c = lp.Character
         if c and getgenv().Noclip then
@@ -794,7 +762,7 @@ end)
 local eP = CFrame.new(-114.81, 9.28, 1356.67)
 local lP = CFrame.new(-2873.62, 32.17, 1337.38)
 
-spawn(function()
+task.spawn(function()
     while task.wait(1) do
         if getgenv().AutoEnzo or getgenv().AutoLong then
             pcall(function()
@@ -804,10 +772,10 @@ spawn(function()
                     if (c.HumanoidRootPart.Position - tP.Position).Magnitude > 5 then
                         c.HumanoidRootPart.CFrame = tP
                     end
-                    local mGui = lp.PlayerGui:FindFirstChild("MainGui")
-                    local mMenu = mGui and mGui:FindFirstChild("Menu")
-                    if mMenu then
-                        for _, f in ipairs(mMenu:GetChildren()) do
+                    local mG = lp.PlayerGui:FindFirstChild("MainGui")
+                    local mM = mG and mG:FindFirstChild("Menu")
+                    if mM then
+                        for _, f in ipairs(mM:GetChildren()) do
                             if f:IsA("Frame") and f.Visible then
                                 local sF = f:FindFirstChild("Select", true)
                                 local bF = sF and sF:FindFirstChild("button")
@@ -830,107 +798,66 @@ spawn(function()
         end
     end
 end)
-local Events = RS:FindFirstChild("Events") or RS
 
-local function makeNpcEsp(npc, type, col)
-    if not npc or not npc:IsA("Model") or getgenv().ESPList[npc] then return end
-    if not npc:FindFirstChildOfClass("Humanoid") then return end
-    local root = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart
-    if not root then return end
-    local box = Instance.new("Highlight")
-    box.Adornee = npc
-    box.FillTransparency = 1
-    box.OutlineColor = col
-    box.OutlineTransparency = 0
-    box.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    box.Parent = npc
-    local bg = Instance.new("BillboardGui")
-    bg.Size = UDim2.fromOffset(200, 40)
-    bg.StudsOffset = Vector3.new(0, 3.5, 0)
-    bg.AlwaysOnTop = true
-    bg.Adornee = root
-    bg.Parent = npc
-    local txt = Instance.new("TextLabel", bg)
-    txt.Size = UDim2.new(1, 0, 1, 0)
-    txt.BackgroundTransparency = 1
-    txt.Text = "["..type.."] "..npc.Name
-    txt.TextColor3 = col
-    txt.TextStrokeTransparency = 0
-    txt.Font = Enum.Font.GothamBold
-    txt.TextSize = 14
-    getgenv().ESPList[npc] = { highlight = box, billboard = bg, type = type }
+local function mkE(n, t, c)
+    if not n or getgenv().ESPList[n] then return end
+    local h = n:FindFirstChild("HumanoidRootPart") or n.PrimaryPart
+    if not h then return end
+    local hl = Instance.new("Highlight")
+    hl.Adornee = n
+    hl.FillTransparency = 1
+    hl.OutlineColor = c
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = n
+    local bb = Instance.new("BillboardGui")
+    bb.Size = UDim2.fromOffset(150, 36)
+    bb.StudsOffset = Vector3.new(0, 3.2, 0)
+    bb.AlwaysOnTop = true
+    bb.Adornee = h
+    bb.Parent = n
+    local tx = Instance.new("TextLabel", bb)
+    tx.Size = UDim2.new(1, 0, 1, 0)
+    tx.BackgroundTransparency = 1
+    tx.Text = n.Name
+    tx.TextColor3 = c
+    tx.TextStrokeTransparency = 0.2
+    tx.Font = Enum.Font.GothamBold
+    tx.TextSize = 13
+    getgenv().ESPList[n] = {hl = hl, bill = bb, typ = t}
 end
 
-local function makePlrEsp(plr)
-    if not plr or plr == lp or getgenv().ESPPlayerList[plr] then return end
-    local char = plr.Character
-    if not char then return end
-    local root = char:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    local bg = Instance.new("BillboardGui")
-    bg.Size = UDim2.fromOffset(200, 40)
-    bg.StudsOffset = Vector3.new(0, 3.5, 0)
-    bg.AlwaysOnTop = true
-    bg.Adornee = root
-    bg.Parent = char
-    local txt = Instance.new("TextLabel", bg)
-    txt.Size = UDim2.new(1, 0, 1, 0)
-    txt.BackgroundTransparency = 1
-    txt.Text = plr.Name
-    txt.TextColor3 = Color3.fromRGB(255, 255, 255)
-    txt.TextStrokeTransparency = 0
-    txt.Font = Enum.Font.GothamBold
-    txt.TextSize = 14
-    local box = Instance.new("Highlight")
-    box.Adornee = char
-    box.FillTransparency = 1
-    box.OutlineColor = Color3.fromRGB(255, 255, 255)
-    box.OutlineTransparency = 0.3
-    box.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    box.Parent = char
-    getgenv().ESPPlayerList[plr] = { billboard = bg, highlight = box }
-end
-
-local function delPlrEsp(plr)
-    local d = getgenv().ESPPlayerList[plr]
-    if d then
-        if d.billboard then d.billboard:Destroy() end
-        if d.highlight then d.highlight:Destroy() end
-        getgenv().ESPPlayerList[plr] = nil
-    end
-end
-
-spawn(function()
-    while task.wait(1.2) do
+task.spawn(function()
+    while task.wait(1.1) do
         if getgenv().ESP_T or getgenv().ESP_M then
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("Model") and v ~= lp.Character and not Players:GetPlayerFromCharacter(v) then
-                    local n = string.lower(v.Name)
-                    if v:FindFirstChildOfClass("Humanoid") then
-                        if n:find("taoist") and getgenv().ESP_T then
-                            makeNpcEsp(v, "Taoist", Color3.fromRGB(255, 165, 0))
-                        elseif n:find("maoshan") and getgenv().ESP_M then
-                            makeNpcEsp(v, "Maoshan", Color3.fromRGB(180, 0, 255))
-                        end
+            for _, o in ipairs(workspace:GetDescendants()) do
+                if o:IsA("Model") and o ~= lp.Character and not p:GetPlayerFromCharacter(o) then
+                    local n = string.lower(o.Name)
+                    if n:find("taoist") and getgenv().ESP_T then
+                        mkE(o, "Taoist", Color3.fromRGB(255, 160, 40))
+                    elseif n:find("maoshan") and getgenv().ESP_M then
+                        mkE(o, "Maoshan", Color3.fromRGB(170, 40, 255))
+                    end
+                end
+            end
+        end
+        if getgenv().ESP_P then
+            for _, pl in ipairs(p:GetPlayers()) do
+                if pl ~= lp and pl.Character and not getgenv().ESPPlayerList[pl] then
+                    local h = pl.Character:FindFirstChild("HumanoidRootPart")
+                    if h then
+                        local hl = Instance.new("Highlight")
+                        hl.Adornee = pl.Character
+                        hl.FillTransparency = 1
+                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        hl.Parent = pl.Character
+                        getgenv().ESPPlayerList[pl] = {hl = hl}
                     end
                 end
             end
         else
-            for npc, d in pairs(getgenv().ESPList) do
-                if d.highlight then d.highlight:Destroy() end
-                if d.billboard then d.billboard:Destroy() end
-                getgenv().ESPList[npc] = nil
-            end
-        end
-        if getgenv().ESP_P then
-            for _, p in ipairs(Players:GetPlayers()) do
-                if p ~= lp and p.Character then
-                    makePlrEsp(p)
-                end
-            end
-        else
-            for p, d in pairs(getgenv().ESPPlayerList) do
-                delPlrEsp(p)
+            for pl, d in pairs(getgenv().ESPPlayerList) do
+                if d.hl then d.hl:Destroy() end
+                getgenv().ESPPlayerList[pl] = nil
             end
         end
     end
@@ -938,288 +865,158 @@ end)
 
 pcall(function()
     for _, g in ipairs({game.CoreGui, lp.PlayerGui}) do
-        local old = g:FindFirstChild("BeoFishBtn")
-        if old then old:Destroy() end
+        local o = g:FindFirstChild("BeoFishBtn")
+        if o then o:Destroy() end
     end
 end)
-local fishGui = Instance.new("ScreenGui")
-fishGui.Name = "BeoFishBtn"
-fishGui.ResetOnSpawn = false
-pcall(function() fishGui.Parent = game.CoreGui end)
-if not fishGui.Parent then fishGui.Parent = lp:WaitForChild("PlayerGui") end
-local fishBtn = Instance.new("TextButton", fishGui)
-fishBtn.Size = UDim2.new(0, 80, 0, 80)
-fishBtn.Position = UDim2.new(0.85, 0, 0.45, 0)
-fishBtn.BackgroundColor3 = Color3.fromRGB(192, 192, 192)
-fishBtn.Text = "fish"
-fishBtn.TextColor3 = Color3.fromRGB(20, 20, 20)
-fishBtn.Font = Enum.Font.GothamBold
-fishBtn.TextSize = 16
-fishBtn.BorderSizePixel = 0
-fishBtn.Visible = false
-Instance.new("UICorner", fishBtn).CornerRadius = UDim.new(1, 0)
-getgenv().BeoFishButton = fishBtn
-fishBtn.Visible = getgenv().FakeBtn
-fishBtn.MouseButton1Click:Connect(function()
+local fg = Instance.new("ScreenGui")
+fg.Name = "BeoFishBtn"
+fg.ResetOnSpawn = false
+pcall(function() fg.Parent = game.CoreGui end)
+if not fg.Parent then fg.Parent = lp:WaitForChild("PlayerGui") end
+local fb = Instance.new("TextButton", fg)
+fb.Size = UDim2.new(0, 78, 0, 78)
+fb.Position = UDim2.new(0.86, 0, 0.46, 0)
+fb.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
+fb.Text = "fish"
+fb.TextColor3 = Color3.fromRGB(25, 25, 25)
+fb.Font = Enum.Font.GothamBold
+fb.TextSize = 15
+fb.BorderSizePixel = 0
+fb.Visible = false
+Instance.new("UICorner", fb).CornerRadius = UDim.new(1, 0)
+getgenv().BeoFishButton = fb
+fb.Visible = getgenv().FakeBtn
+fb.MouseButton1Click:Connect(function()
     pcall(function()
-        if Events:FindFirstChild("Fishing") then Events.Fishing:FireServer() end
+        if ev:FindFirstChild("Fishing") then ev.Fishing:FireServer() end
     end)
 end)
 
-local RhythmHitEvent = Events:FindFirstChild("RhythmHit")
-local lanes = {"A", "S", "D"}
-local keys = { A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D }
-local lastHit = { A = 0, S = 0, D = 0 }
-local lastScan = 0
-local lastPhase2Hit = 0
-local phase2Hist = {}
-local centerPos = UDim2.new(0.5, 0, 0.5, 0)
-local lockingBar = false
-local barConn = nil
-local boundBar = nil
-local fGui, fBar, rhythmGui, bossBar, mobileBtn
+-- MINIGAME
+local rh = ev:FindFirstChild("RhythmHit")
+local kM = {A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D}
+local hN = setmetatable({}, {__mode = "k"})
+local lp2 = 0
+local p2h = {}
 
-local function refreshGui()
-    local pg = lp:FindFirstChild("PlayerGui")
-    local main = pg and pg:FindFirstChild("MainGui")
-    fGui = main and main:FindFirstChild("Fishing")
-    if not fGui then return end
-    local barFrame = fGui:FindFirstChild("BarFrame")
-    fBar = barFrame and barFrame:FindFirstChild("Bar")
-    rhythmGui = fGui:FindFirstChild("Rhythm")
-    bossBar = fGui:FindFirstChild("BossFightBar")
-    local mob = main:FindFirstChild("Mobile")
-    mobileBtn = mob and mob:FindFirstChild("Fishing")
-    if not RhythmHitEvent then RhythmHitEvent = Events:FindFirstChild("RhythmHit") end
+local function grab()
+    local m = lp.PlayerGui:FindFirstChild("MainGui")
+    if not m then return end
+    local f = m:FindFirstChild("Fishing")
+    if not f then return end
+    local mo = m:FindFirstChild("Mobile")
+    return {fish = f, rhythm = f:FindFirstChild("Rhythm"), boss = f:FindFirstChild("BossFightBar"), mFish = mo and mo:FindFirstChild("Fishing")}
 end
 
-local function lockBar()
-    if lockingBar then return end
-    if not fGui or not fGui.Visible or not fBar then return end
-    if not getgenv().MiniGame then return end
-    lockingBar = true
-    pcall(function()
-        fBar:TweenPosition(centerPos, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
-        fBar.Position = centerPos
-    end)
-    lockingBar = false
-end
-
-local function bindBar()
-    if fBar and fBar ~= boundBar then
-        if barConn then pcall(function() barConn:Disconnect() end) barConn = nil end
-        boundBar = fBar
-        barConn = fBar:GetPropertyChangedSignal("Position"):Connect(function()
-            if not lockingBar and fBar.Position.X.Scale ~= 0.5 then
-                lockBar()
-            end
-        end)
-    end
-end
-
-local function fireBtn(btn)
-    if not btn then return false end
-    if not btn:IsA("GuiButton") then
-        btn = btn:FindFirstChildWhichIsA("GuiButton", true) or (btn.Parent and btn.Parent:IsA("GuiButton") and btn.Parent) or nil
-        if not btn then return false end
-    end
-    local clicked = false
-    local sigs = {"MouseButton1Click", "Activated", "MouseButton1Down", "MouseButton1Up"}
+local function clk(b)
+    if not b then return false end
+    local ok = false
     if getconnections then
-        for _, s in ipairs(sigs) do
-            local ok, sig = pcall(function() return btn[s] end)
-            if ok and sig then
-                pcall(function()
-                    for _, c in pairs(getconnections(sig)) do
-                        if c.Function then task.spawn(c.Function) clicked = true
-                        elseif c.Fire then c:Fire() clicked = true end
-                    end
-                end)
-            end
+        for _, n in ipairs({"MouseButton1Down", "MouseButton1Click", "Activated"}) do
+            pcall(function()
+                local s = b[n]
+                if not s then return end
+                for _, c in pairs(getconnections(s)) do
+                    if c.Function then task.spawn(c.Function) ok = true
+                    elseif c.Fire then c:Fire() ok = true end
+                end
+            end)
         end
     end
     if firesignal then
-        for _, s in ipairs(sigs) do
-            pcall(function()
-                firesignal(btn[s])
-                clicked = true
-            end)
-        end
-    end
-    return clicked
-end
-
-local getupval = (debug and debug.getupvalue) or getupvalue
-
-local function stepBoss()
-    if not bossBar or not bossBar.Visible then
-        if #phase2Hist > 0 then table.clear(phase2Hist) end
-        return
-    end
-    local bar = bossBar:FindFirstChild("Bar")
-    local hb = bossBar:FindFirstChild("Hitbox")
-    if not bar or not hb then return end
-    local barW = bar.Size.X.Scale
-    local barX = bar.Position.X.Scale + barW * (0.5 - bar.AnchorPoint.X)
-    local hbW = hb.Size.X.Scale
-    local hbL = hb.Position.X.Scale - hbW * hb.AnchorPoint.X
-    local now = os.clock()
-    table.insert(phase2Hist, { t = now, x = barX })
-    while #phase2Hist > 1 and (now - phase2Hist[1].t) > 0.15 do
-        table.remove(phase2Hist, 1)
-    end
-    local gotUpval = false
-    local clickFn = nil
-    if getconnections and getupval and mobileBtn then
         pcall(function()
-            for _, c in pairs(getconnections(mobileBtn.MouseButton1Down)) do
-                local fn = c.Function and getupval(c.Function, 1)
-                if type(fn) == "function" then
-                    clickFn = fn
-                    local u1 = getupval(fn, 1)
-                    local u2 = getupval(fn, 2)
-                    local u3 = getupval(fn, 3)
-                    local u4 = getupval(fn, 4)
-                    local u5 = getupval(fn, 5)
-                    local u6 = getupval(fn, 6)
-                    local u7 = getupval(fn, 7)
-                    local u8 = getupval(fn, 8)
-                    local u9 = getupval(fn, 9)
-                    if u1 == true and type(u2) == "number" and type(u3) == "number" and type(u4) == "number" and type(u5) == "number" and type(u6) == "number" and type(u7) == "number" and type(u8) == "number" and type(u9) == "number" then
-                        if math.abs(u8 - hbW) < 0.005 and math.abs(u9 - hbL) < 0.005 then
-                            gotUpval = true
-                            if now - u2 >= 0.035 and now - lastPhase2Hit >= 0.035 then
-                                local calc = (now - 0.025 - u3) % u4 * u5
-                                if u6 < calc then calc = u6 * 2 - calc end
-                                local finalX = u7 + calc
-                                local pad = u8 * 0.3
-                                if finalX >= (u9 - pad * 0.8) and finalX <= (u9 + u8 + pad * 0.8) then
-                                    lastPhase2Hit = now
-                                    fn(false)
-                                end
-                            end
-                        end
-                        break
-                    end
-                end
-            end
+            firesignal(b.MouseButton1Down)
+            firesignal(b.MouseButton1Click)
+            ok = true
         end)
     end
-    if gotUpval then return end
-    if now - lastPhase2Hit < 0.04 then return end
-    local evalX = barX
-    local tgt = now - 0.041
-    for i = #phase2Hist, 1, -1 do
-        if phase2Hist[i].t <= tgt then evalX = phase2Hist[i].x break end
-    end
-    local pad = hbW * 0.2
-    local bad = bossBar:FindFirstChild("HitboxBad")
-    if bad and bad.Visible then
-        local bw = bad.Size.X.Scale
-        local bl = bad.Position.X.Scale - bw * bad.AnchorPoint.X
-        if evalX >= (bl - 0.01) and evalX <= (bl + bw + 0.01) then return end
-    end
-    if evalX >= (hbL - pad) and evalX <= (hbL + hbW + pad) then
-        lastPhase2Hit = now
-        local ok = false
-        if clickFn then pcall(function() clickFn(false) ok = true end) end
-        if not ok and mobileBtn then
-            if getconnections then
-                pcall(function()
-                    for _, c in pairs(getconnections(mobileBtn.MouseButton1Down)) do
-                        if c.Function then task.spawn(c.Function) ok = true
-                        elseif c.Fire then c:Fire() ok = true end
-                    end
-                end)
+    return ok
+end
+
+local function doR(g)
+    local r = g.rhythm
+    if not r or not r.Visible then return end
+    if not rh or not rh.Parent then rh = ev:FindFirstChild("RhythmHit") end
+    for _, ln in ipairs({"A", "S", "D"}) do
+        local lf = r:FindFirstChild("Progression" .. ln)
+        if lf then
+            local bf = lf:FindFirstChild("BarFrame")
+            local ty = bf and bf.Position.Y.Scale or 0.85
+            local bt, nt = 0.11, nil
+            for _, ch in ipairs(lf:GetChildren()) do
+                if ch.Name == "Note_FX" and ch:IsA("GuiObject") and ch.Visible and not hN[ch] then
+                    local d = math.abs(ch.Position.Y.Scale - ty)
+                    if d < bt then bt = d nt = ch end
+                end
             end
-            if not ok and firesignal then
-                pcall(function() firesignal(mobileBtn.MouseButton1Down) ok = true end)
+            if nt then
+                hN[nt] = true
+                local b = lf:FindFirstChild("Button") or lf:FindFirstChildWhichIsA("TextButton", true) or lf:FindFirstChildWhichIsA("ImageButton", true)
+                clk(b)
+                local kc = kM[ln]
+                if kc then
+                    pcall(function()
+                        vim:SendKeyEvent(true, kc, false, game)
+                        task.delay(0.02, function() vim:SendKeyEvent(false, kc, false, game) end)
+                    end)
+                end
+                if rh then pcall(function() rh:FireServer("hit") end) end
             end
         end
-        if not ok then
+    end
+end
+
+local function doP(g)
+    local b = g.boss
+    if not b or not b.Visible then
+        if #p2h > 0 then table.clear(p2h) end
+        return
+    end
+    local br = b:FindFirstChild("Bar")
+    local hb = b:FindFirstChild("Hitbox")
+    if not br or not hb then return end
+    local nw = os.clock()
+    local bw = br.Size.X.Scale
+    local cx = br.Position.X.Scale + bw * (0.5 - br.AnchorPoint.X)
+    local hw = hb.Size.X.Scale
+    local hl = hb.Position.X.Scale - hw * hb.AnchorPoint.X
+    table.insert(p2h, {t = nw, x = cx})
+    while #p2h > 1 and nw - p2h[1].t > 0.12 do table.remove(p2h, 1) end
+    if nw - lp2 < 0.12 then return end
+    local ex = cx
+    for i = #p2h, 1, -1 do
+        if p2h[i].t <= nw - 0.03 then ex = p2h[i].x break end
+    end
+    local bad = b:FindFirstChild("HitboxBad")
+    if bad and bad.Visible then
+        local bbw = bad.Size.X.Scale
+        local bl = bad.Position.X.Scale - bbw * bad.AnchorPoint.X
+        if ex >= bl and ex <= bl + bbw then return end
+    end
+    local pd = hw * 0.2
+    if ex >= hl - pd and ex <= hl + hw + pd then
+        lp2 = nw
+        if not clk(g.mFish) then
             pcall(function()
-                VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                task.delay(0.01, function() VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0) end)
+                vim:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                task.delay(0.015, function() vim:SendMouseButtonEvent(0, 0, 0, false, game, 0) end)
             end)
         end
     end
 end
 
-local function stepRhythm()
-    if not rhythmGui or not rhythmGui.Visible then return end
-    local now = os.clock()
-    if now - lastScan < 0.025 then return end
-    lastScan = now
-    for _, lane in ipairs(lanes) do
-        if now - (lastHit[lane] or 0) >= 0.05 then
-            local laneF = rhythmGui:FindFirstChild("Progression" .. lane)
-            if laneF then
-                local barF = laneF:FindFirstChild("BarFrame")
-                local tgtY = barF and barF.Position.Y.Scale or 0.85
-                local note = nil
-                local best = 0.18
-                for _, c in ipairs(laneF:GetChildren()) do
-                    if c.Name == "Note_FX" and c:IsA("GuiObject") and c.Visible then
-                        local d = math.abs(c.Position.Y.Scale - tgtY)
-                        if d <= best then best = d note = c end
-                    end
-                end
-                if note then
-                    lastHit[lane] = now
-                    local b = laneF:FindFirstChild("Button")
-                    if b then fireBtn(b) end
-                    if note.Parent ~= nil then
-                        local kc = keys[lane]
-                        if kc then
-                            pcall(function()
-                                VIM:SendKeyEvent(true, kc, false, game)
-                                task.delay(0.02, function() VIM:SendKeyEvent(false, kc, false, game) end)
-                            end)
-                        end
-                    end
-                    if note.Parent ~= nil and best <= 0.1 and RhythmHitEvent then
-                        pcall(function()
-                            note:Destroy()
-                            RhythmHitEvent:FireServer("hit")
-                        end)
-                    end
-                end
-            end
+run.RenderStepped:Connect(function()
+    if not getgenv().MiniGame and not getgenv().HoldBar then return end
+    pcall(function()
+        local g = grab()
+        if not g or not g.fish or not g.fish.Visible then return end
+        if getgenv().MiniGame then
+            doR(g)
+            doP(g)
         end
-    end
-end
-
-RunService.RenderStepped:Connect(function()
-    if not fGui or not fGui.Visible then
-        refreshGui()
-        return
-    end
-    bindBar()
-    lockBar()
-    if getgenv().MiniGame then
-        stepBoss()
-    end
+    end)
 end)
-
-RunService.Stepped:Connect(function()
-    if not fGui or not fGui.Visible then return end
-    bindBar()
-    lockBar()
-end)
-
-RunService.Heartbeat:Connect(function()
-    if not fGui or not fGui.Visible then
-        refreshGui()
-        return
-    end
-    bindBar()
-    lockBar()
-    if getgenv().MiniGame then
-        stepBoss()
-        stepRhythm()
-    end
-end)
-refreshGui()
 
 local vu = game:GetService("VirtualUser")
 lp.Idled:Connect(function()
@@ -1228,7 +1025,6 @@ lp.Idled:Connect(function()
 end)
 
 getgenv().AutoRejoin = true
-
 lp.OnTeleport:Connect(function(s)
     if getgenv().AutoRejoin and (s == Enum.TeleportState.Started or s == Enum.TeleportState.InProgress) then
         pcall(function()
@@ -1237,15 +1033,15 @@ lp.OnTeleport:Connect(function(s)
     end
 end)
 
-game:GetService("Players").PlayerRemoving:Connect(function(p)
-    if p == lp and getgenv().AutoRejoin then
+p.PlayerRemoving:Connect(function(pl)
+    if pl == lp and getgenv().AutoRejoin then
         pcall(function()
-            local jPath = fl .. "/lastJob.txt"
-            if isfile(jPath) then
-                local jId = readfile(jPath)
-                if jId and jId ~= "" then
+            local jp = fl .. "/lastJob.txt"
+            if isfile(jp) then
+                local jd = readfile(jp)
+                if jd and jd ~= "" then
                     task.wait(5)
-                    TS:TeleportToPlaceInstance(pId, jId, p)
+                    ts:TeleportToPlaceInstance(p.GameId, jd, pl)
                 end
             end
         end)
