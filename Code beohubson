@@ -1,3 +1,4 @@
+
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -643,6 +644,7 @@ spawn(function()
             local h = c:FindFirstChildOfClass("Humanoid")
             if not h or h.Health <= 0 then return end
             local function gap() task.wait(0.15 + math.random() * 0.05) end
+            
             if getgenv().AllSkill then
                 useSk("Z") gap() useSk("X") gap() useSk("C") gap() useSk("V")
             else
@@ -710,9 +712,8 @@ spawn(function()
     end
 end)
 
--- AUTO REEL (Ép cứng 0.5)
+-- AUTO REEL (CỨNG NGẮT Ở GIỮA)
 local prog = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
-local isTwe = false
 
 spawn(function()
     while task.wait(0.05) do
@@ -724,10 +725,8 @@ spawn(function()
                 local bF = fUI:FindFirstChild("BarFrame")
                 local b = bF and bF:FindFirstChild("Bar")
                 
-                if b and b.Position.X.Scale ~= 0.5 then
-                    isTwe = true
+                if b then
                     b.Position = UDim2.new(0.5, 0, b.Position.Y.Scale, 0)
-                    task.delay(0.02, function() isTwe = false end)
                 end
                 
                 if prog then
@@ -735,7 +734,7 @@ spawn(function()
                 end
             end
         end
-        task.wait(0.1)
+        task.wait(0.05)
     end
 end)
 
