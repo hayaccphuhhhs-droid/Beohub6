@@ -10,7 +10,9 @@ local me = plrs.LocalPlayer
 local evs = rep:FindFirstChild("Events") or rep
 
 local def = {
-    AutoSell = false, SellDelay = 5, AutoBuyBait = false, BuyBaitAmount = 1, BuyBaitDelay = 5,
+    AutoSell = false, SellDelay = 5, AutoBuyBait = false, BuyBaitName = "", BuyBaitAmount = 1, BuyBaitDelay = 5,
+    AutoCraftBait = false, CraftBaitName = "", CraftBaitAmount = 1,
+    AutoCraftRod = false, CraftRodName = "",
     HoldBar = false, MiniGame = false, Noclip = false,
     AllSkill = false, SkZ = false, SkX = false, SkC = false, SkV = false,
     Water = false, AutoCast = false, AntiAdmin = true, AdminIn = false,
@@ -18,15 +20,16 @@ local def = {
     SpdNorm = 46, SpdFish = 0, FakeBtn = false,
     AutoEnzo = false, AutoLong = false, BossMode = "Normal"
 }
+
 for k, v in pairs(def) do
     if getgenv()[k] == nil then getgenv()[k] = v end
 end
+
 getgenv().ESPList = getgenv().ESPList or {}
 getgenv().ESPPlayerList = getgenv().ESPPlayerList or {}
 getgenv().BeoFishButton = nil
 
-local cf = "BeoHubCfg"
-local cfPath = cf .. "/data.json"
+local cf, cfPath = "BeoHubCfg", "BeoHubCfg/data.json"
 
 local function loadCfg()
     pcall(function()
@@ -41,6 +44,7 @@ end
 loadCfg()
 
 local admins = {"tom_iceren", "ctgthecreator"}
+
 local function hasAdm()
     for _, p in ipairs(plrs:GetPlayers()) do
         for _, a in ipairs(admins) do
@@ -64,6 +68,8 @@ local function killAll()
     getgenv().AutoEnzo = false
     getgenv().AutoLong = false
     getgenv().AutoBuyBait = false
+    getgenv().AutoCraftBait = false
+    getgenv().AutoCraftRod = false
 end
 
 task.spawn(function()
@@ -110,6 +116,7 @@ bubble.TextSize = 20
 bubble.BorderSizePixel = 0
 bubble.AutoButtonColor = false
 Instance.new("UICorner", bubble).CornerRadius = UDim.new(1, 0)
+
 local bStroke = Instance.new("UIStroke", bubble)
 bStroke.Color = ac
 bStroke.Thickness = 2
@@ -411,6 +418,42 @@ local function addSlider(t, min, max, get, set)
     end)
 end
 
+local function addInput(t, get, set)
+    local r = Instance.new("Frame", cont)
+    r.Size = UDim2.new(1, -4, 0, 34)
+    r.BackgroundColor3 = cd
+    r.BorderSizePixel = 0
+    r.LayoutOrder = getNum2()
+    Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
+    local l = Instance.new("TextLabel", r)
+    l.Size = UDim2.new(0, 100, 1, 0)
+    l.Position = UDim2.new(0, 12, 0, 0)
+    l.BackgroundTransparency = 1
+    l.Text = t
+    l.TextColor3 = Color3.fromRGB(230, 235, 245)
+    l.Font = Enum.Font.Gotham
+    l.TextSize = 13
+    l.TextXAlignment = Enum.TextXAlignment.Left
+    local box = Instance.new("TextBox", r)
+    box.Size = UDim2.new(1, -130, 0, 24)
+    box.Position = UDim2.new(1, -118, 0.5, -12)
+    box.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
+    box.TextColor3 = Color3.fromRGB(220, 235, 255)
+    box.PlaceholderText = "..."
+    box.PlaceholderColor3 = Color3.fromRGB(90, 100, 120)
+    box.Font = Enum.Font.Gotham
+    box.TextSize = 12
+    box.Text = tostring(get() or "")
+    box.BorderSizePixel = 0
+    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
+    local stroke = Instance.new("UIStroke", box)
+    stroke.Color = Color3.fromRGB(40, 50, 70)
+    box.FocusLost:Connect(function()
+        set(box.Text)
+        saveCfg()
+    end)
+end
+
 local function addSkillRow()
     local r = Instance.new("Frame", cont)
     r.Size = UDim2.new(1, -4, 0, 34)
@@ -517,8 +560,9 @@ local islands = {
     {"Sovereign", -1277, 6, 1239}, {"Perch", -62, 9, -1322}, {"Frost", -1366, 9, -1496},
     {"Coconut", 1493, 6, -1431}, {"Amber", 1259, 6, 1401}, {"Battlefield", 1393, 6, 169},
     {"MistPeak", 2660, 6, -87}, {"World Angler", -2417, 7, -204}, {"Weather", -2911, 6, 1212},
-    {"Mystic Reef", -2657, 6, -1303},
+    {"Mystic Reef", -2657, 6, -1303}
 }
+
 pages.TP = function()
     section("TELEPORT")
     for _, v in ipairs(islands) do
@@ -539,10 +583,39 @@ pages.Shop = function()
     addBtn("Sell All Now", function()
         if rep.Events and rep.Events.SellFish then rep.Events.SellFish:FireServer("All") end
     end)
+
     section("AUTO BUY BAIT")
     addToggle("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
+    addInput("Bait Name", function() return getgenv().BuyBaitName end, function(v) getgenv().BuyBaitName = v end)
     addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
-    addSlider("Buy Delay (Sec)", 5, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
+    addSlider("Buy Delay (Sec)", 1, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
+    addBtn("Buy Bait Now", function()
+        local ev = rep.Events and (rep.Events:FindFirstChild("BuyBait") or rep.Events:FindFirstChild("PurchaseBait") or rep.Events:FindFirstChild("BuyItem"))
+        if ev then
+            ev:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount or 1)
+        end
+    end)
+
+    section("AUTO CRAFT BAIT")
+    addToggle("Auto Craft Bait", function() return getgenv().AutoCraftBait end, function(v) getgenv().AutoCraftBait = v end)
+    addInput("Bait Name", function() return getgenv().CraftBaitName end, function(v) getgenv().CraftBaitName = v end)
+    addSlider("Craft Amount", 1, 100, function() return getgenv().CraftBaitAmount end, function(v) getgenv().CraftBaitAmount = v end)
+    addBtn("Craft Bait Now", function()
+        local ev = rep.Events and rep.Events:FindFirstChild("CraftBait")
+        if ev then
+            ev:FireServer(getgenv().CraftBaitName, getgenv().CraftBaitAmount or 1)
+        end
+    end)
+
+    section("AUTO CRAFT ROD")
+    addToggle("Auto Craft Rod", function() return getgenv().AutoCraftRod end, function(v) getgenv().AutoCraftRod = v end)
+    addInput("Rod Name", function() return getgenv().CraftRodName end, function(v) getgenv().CraftRodName = v end)
+    addBtn("Craft Rod Now", function()
+        local ev = rep.Events and rep.Events:FindFirstChild("CraftRod")
+        if ev then
+            ev:FireServer(getgenv().CraftRodName)
+        end
+    end)
 end
 
 pages.ESP = function()
@@ -846,6 +919,54 @@ task.spawn(function()
                     end
                 end
             end)
+        end
+    end
+end)
+
+-- auto buy / craft
+local lastBuy = 0
+local lastCraftBait = 0
+local lastCraftRod = 0
+
+task.spawn(function()
+    while task.wait(1) do
+        local now = os.clock()
+
+        if getgenv().AutoBuyBait and getgenv().BuyBaitName and getgenv().BuyBaitName ~= "" then
+            local delay = (getgenv().BuyBaitDelay or 5)
+            if now - lastBuy >= delay then
+                lastBuy = now
+                local ev = rep.Events and (rep.Events:FindFirstChild("BuyBait") or rep.Events:FindFirstChild("PurchaseBait") or rep.Events:FindFirstChild("BuyItem"))
+                if ev then
+                    pcall(function()
+                        ev:FireServer(getgenv().BuyBaitName, getgenv().BuyBaitAmount or 1)
+                    end)
+                end
+            end
+        end
+
+        if getgenv().AutoCraftBait and getgenv().CraftBaitName and getgenv().CraftBaitName ~= "" then
+            if now - lastCraftBait >= 2 then
+                lastCraftBait = now
+                local ev = rep.Events and rep.Events:FindFirstChild("CraftBait")
+                if ev then
+                    pcall(function()
+                        ev:FireServer(getgenv().CraftBaitName, getgenv().CraftBaitAmount or 1)
+                    end)
+                end
+            end
+        end
+
+        if getgenv().AutoCraftRod and getgenv().CraftRodName and getgenv().CraftRodName ~= "" then
+            if now - lastCraftRod >= 2 then
+                lastCraftRod = now
+                local ev = rep.Events and rep.Events:FindFirstChild("CraftRod")
+                if ev then
+                    pcall(function()
+                        ev:FireServer(getgenv().CraftRodName)
+                    end)
+                end
+            end
         end
     end
 end)
