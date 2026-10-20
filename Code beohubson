@@ -1284,42 +1284,74 @@ fb.MouseButton1Click:Connect(function()
 end)
 
 -- minigame
-local rhythmLanes = {"A", "S", "D"}
-local rhythmKeyMap = {
-    A = Enum.KeyCode.A,
-    S = Enum.KeyCode.S,
-    D = Enum.KeyCode.D
-}
-local lastRhythmLaneHit = {A = 0, S = 0, D = 0}
-local lastRhythmScan = 0
-local lastPhase2HitTick = 0
-local phase2BarHistory = {}
-local CENTER_BAR_POS = UDim2.new(0.5, 0, 0.5, 0)
-local isLockingBar = false
-local barPosConn = nil
-local boundBar = nil
-local getupval = debug and debug.getupvalue or getupvalue
+local function StepRhythmMiniGame()
+    local RG = FishingGui and FishingGui:FindFirstChild("Rhythm")
+    if not RG or not RG.Visible then return end
 
-local function LockFishingBar()
-    if isLockingBar then return end
-    if not FishingGui or not FishingGui.Visible or not FishingBar then return end
-    if not (getgenv().HoldBar or getgenv().MiniGame) then return end
+    local now = os.clock()
+    
+    -- Random time (0.03s - 0.07s)
+    local scanDelay = 0.03 + math.random() * 0.04
+    if now - lastRhythmScan < scanDelay then return end
+    lastRhythmScan = now
 
-    isLockingBar = true
-    local c = me.Character
-    if c and (tonumber(c:GetAttribute("GuildPower")) or 0) < 99999999 then
-        pcall(function()
-            c:SetAttribute("GuildPower", 99999999)
-            local stats = c:FindFirstChild("Stats")
-            local rp = stats and stats:FindFirstChild("RodPower")
-            if rp then
-                local o = rp.Value
-                rp.Value = o + 1
-                rp.Value = o
+    local RhythmHitEvent = evs:FindFirstChild("RhythmHit")
+
+    for _, lane in ipairs(rhythmLanes) do
+        -- Random thời gian chờ (0.05s - 0.1s)
+        local hitDelay = 0.05 + math.random() * 0.05
+        if now - (lastRhythmLaneHit[lane] or 0) >= hitDelay then
+            local laneFrame = RG:FindFirstChild("Progression" .. lane)
+            if laneFrame then
+                local barFrame = laneFrame:FindFirstChild("BarFrame")
+                local targetY = barFrame and barFrame.Position.Y.Scale or 0.85
+                local targetNote = nil
+                local bestDist = 0.18
+
+                for _, child in ipairs(laneFrame:GetChildren()) do
+                    if child.Name == "Note_FX" and child:IsA("GuiObject") and child.Visible then
+                        local dist = math.abs(child.Position.Y.Scale - targetY)
+                        if dist <= bestDist then
+                            bestDist = dist
+                            targetNote = child
+                        end
+                    end
+                end
+
+                if targetNote then
+                    lastRhythmLaneHit[lane] = now
+                    local btn = laneFrame:FindFirstChild("Button")
+                    if btn then
+                        TriggerGuiButton(btn)
+                    end
+
+                    if targetNote.Parent ~= nil then
+                        local kc = rhythmKeyMap[lane]
+                        if kc then
+                            -- Random thời gian giữ phím (0.02s - 0.04s)
+                            local holdTime = 0.02 + math.random() * 0.02
+                            pcall(function()
+                                vim:SendKeyEvent(true, kc, false, game)
+                                task.delay(holdTime, function()
+                                    vim:SendKeyEvent(false, kc, false, game)
+                                end)
+                            end)
+                        end
+                    end
+
+                    -- Remote event
+                    if targetNote.Parent ~= nil and bestDist <= 0.1 and RhythmHitEvent then
+                        pcall(function()
+                            targetNote:Destroy()
+                            RhythmHitEvent:FireServer("hit")
+                        end)
+                    end
+                end
             end
-        end)
+        end
     end
-    pcall(function()
+end
+pcall(function()
         FishingBar:TweenPosition(CENTER_BAR_POS, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
         FishingBar.Position = CENTER_BAR_POS
     end)
