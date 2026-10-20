@@ -585,10 +585,11 @@ local function addDropdown(t, list, get, set)
     b.Size = UDim2.new(1, -130, 0, 24)
     b.Position = UDim2.new(1, -118, 0.5, -12)
     b.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
-    b.Text = get() ~= "" and get() or "Chọn..."
+    b.Text = get() ~= "" and get() or "Select..."
     b.TextColor3 = Color3.fromRGB(220, 235, 255)
     b.Font = Enum.Font.Gotham
     b.TextSize = 12
+    b.TextXAlignment = Enum.TextXAlignment.Center -- ✅ Căn giữa chữ
     b.BorderSizePixel = 0
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
     Instance.new("UIStroke", b).Color = Color3.fromRGB(40, 50, 70)
@@ -641,7 +642,7 @@ local function addDropdown(t, list, get, set)
         local empty = Instance.new("TextLabel", scroll)
         empty.Size = UDim2.new(1, -6, 0, 28)
         empty.BackgroundTransparency = 1
-        empty.Text = "Không có dữ liệu"
+        empty.Text = "No Data"
         empty.TextColor3 = Color3.fromRGB(140, 150, 165)
         empty.Font = Enum.Font.Gotham
         empty.TextSize = 12
@@ -655,6 +656,7 @@ local function addDropdown(t, list, get, set)
             opt.TextColor3 = Color3.fromRGB(220, 235, 255)
             opt.Font = Enum.Font.Gotham
             opt.TextSize = 12
+            opt.TextXAlignment = Enum.TextXAlignment.Center -- ✅ Căn giữa list
             opt.BorderSizePixel = 0
             opt.ZIndex = 20
             Instance.new("UICorner", opt).CornerRadius = UDim.new(0, 6)
@@ -732,7 +734,7 @@ pages.Shop = function()
 
     section("BUY BAIT")
     addToggle("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
-    addDropdown("Bait Mua", getBuyableBaitList(), function() return getgenv().BuyBaitName end, function(v) getgenv().BuyBaitName = v end)
+    addDropdown("Buy Bait", getBuyableBaitList(), function() return getgenv().BuyBaitName end, function(v) getgenv().BuyBaitName = v end)
     addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
     addSlider("Buy Delay (Sec)", 1, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
     addBtn("Buy Bait Now", function()
@@ -742,7 +744,7 @@ pages.Shop = function()
 
     section("CRAFT BAIT")
     addToggle("Auto Craft Bait", function() return getgenv().AutoCraftBait end, function(v) getgenv().AutoCraftBait = v end)
-    addDropdown("Bait Chế", getCraftableBaitList(), function() return getgenv().CraftBaitName end, function(v) getgenv().CraftBaitName = v end)
+    addDropdown("Craft Bait", getCraftableBaitList(), function() return getgenv().CraftBaitName end, function(v) getgenv().CraftBaitName = v end)
     addSlider("Craft Amount", 1, 100, function() return getgenv().CraftBaitAmount end, function(v) getgenv().CraftBaitAmount = v end)
     addBtn("Craft Bait Now", function()
         local ev = rep.Events and rep.Events:FindFirstChild("CraftBait")
@@ -751,7 +753,7 @@ pages.Shop = function()
 
     section("CRAFT ROD")
     addToggle("Auto Craft Rod", function() return getgenv().AutoCraftRod end, function(v) getgenv().AutoCraftRod = v end)
-    addDropdown("Rod", getRodList(), function() return getgenv().CraftRodName end, function(v) getgenv().CraftRodName = v end)
+    addDropdown("Craft Rod", getRodList(), function() return getgenv().CraftRodName end, function(v) getgenv().CraftRodName = v end)
     addBtn("Craft Rod Now", function()
         local ev = rep.Events and rep.Events:FindFirstChild("CraftRod")
         if ev then ev:FireServer(getgenv().CraftRodName) end
