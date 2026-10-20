@@ -15,7 +15,7 @@ task.delay(1.5, function()
         sg:SetCore("SendNotification", {
             Title = "BeoHub v7",
             Text = "Script loaded successfully! Keyless & Safe.",
-            Icon = "rbxassetid://10590477450",
+            Icon = "rbxassetid://12053823591",
             Duration = 5
         })
     end)
