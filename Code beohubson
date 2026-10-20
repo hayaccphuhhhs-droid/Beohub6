@@ -611,262 +611,83 @@ mkTab("TP", "T", 4)
 mkTab("ESP", "E", 5)
 mkTab("More", "M", 6)
 show("Fish")
-local rem = {"UseSkill","CastSkill","Skill","ActivateSkill","PlaySkill","SkillActivate","DoSkill"}
-local function getR()
-    local e = rs:FindFirstChild("Events") or rs
-    for _, n in ipairs(rem) do
-        local r = e:FindFirstChild(n, true)
-        if r and (r:IsA("RemoteEvent") or r:IsA("RemoteFunction")) then return r end
-    end
-end
-local skR = getR()
-local function useSk(k)
-    if skR then pcall(function() skR:FireServer(k) end) return end
-    pcall(function()
-        vim:SendKeyEvent(true, Enum.KeyCode[k], false, game)
-        task.wait(0.05)
-        vim:SendKeyEvent(false, Enum.KeyCode[k], false, game)
-    end)
-end
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local VIM = game:GetService("VirtualInputManager")
+local lp = Players.LocalPlayer
+local Events = RS:FindFirstChild("Events") or RS
 
-task.spawn(function()
-    while true do
-        task.wait(0.5 + math.random() * 0.3)
-        pcall(function()
-            local c = lp.Character
-            if not c then return end
-            local h = c:FindFirstChildOfClass("Humanoid")
-            if not h or h.Health <= 0 then return end
-            local function gp() task.wait(0.15 + math.random() * 0.05) end
-            if getgenv().AllSkill then
-                useSk("Z") gp() useSk("X") gp() useSk("C") gp() useSk("V")
-            else
-                if getgenv().SkZ then useSk("Z") gp() end
-                if getgenv().SkX then useSk("X") gp() end
-                if getgenv().SkC then useSk("C") gp() end
-                if getgenv().SkV then useSk("V") end
-            end
-        end)
-    end
-end)
-
-task.spawn(function()
-    while true do
-        task.wait(0.3 + math.random() * 0.2)
-        if getgenv().AutoCast then
-            pcall(function()
-                local c = lp.Character
-                local g = lp.PlayerGui:FindFirstChild("MainGui")
-                if c and g then
-                    local fs = c:GetAttribute("Fishing")
-                    local fU = g:FindFirstChild("Fishing")
-                    if not fs and (not fU or not fU.Visible) then
-                        if rs.Events and rs.Events:FindFirstChild("Fishing") then
-                            rs.Events.Fishing:FireServer()
-                        end
-                    end
-                end
-            end)
-        end
-    end
-end)
-
-task.spawn(function()
-    while true do
-        if getgenv().AutoSell then
-            pcall(function()
-                if rs.Events and rs.Events:FindFirstChild("SellFish") then
-                    rs.Events.SellFish:FireServer("All")
-                end
-            end)
-            task.wait(getgenv().SellDelay or 5)
-        else 
-            task.wait(0.5) 
-        end
-    end
-end)
-
--- Auto reel
-local prg = rs:FindFirstChild("Events") and rs.Events:FindFirstChild("UpdateFishProgression")
-task.spawn(function()
-    while task.wait(0.05) do
-        if getgenv().HoldBar then
-            local g = lp.PlayerGui:FindFirstChild("MainGui")
-            local fU = g and g:FindFirstChild("Fishing")
-            if fU and fU.Visible then
-                local bF = fU:FindFirstChild("BarFrame")
-                local b = bF and bF:FindFirstChild("Bar")
-                if b then
-                    b.Position = UDim2.new(0.5, 0, b.Position.Y.Scale, 0)
-                end
-                if prg then pcall(function() prg:FireServer() end) end
-            end
-        end
-        task.wait(0.05)
-    end
-end)
-
-local oldW, wSt = {}, false
-task.spawn(function()
-    while task.wait(0.3) do
-        local on = getgenv().Water
-        if on and not wSt then
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("BasePart") and v.Name:lower() == "water" then
-                    oldW[v] = v.CanCollide
-                    v.CanCollide = true
-                end
-            end
-        elseif not on and wSt then
-            for w, o in pairs(oldW) do
-                if w and w.Parent then w.CanCollide = o end
-            end
-            oldW = {}
-        end
-        wSt = on
-    end
-end)
-
-task.spawn(function()
-    while task.wait(0.15) do
-        if getgenv().SpdCtrl then
-            pcall(function()
-                local c = lp.Character
-                local h = c and c:FindFirstChildOfClass("Humanoid")
-                if not h then return end
-                local g = lp.PlayerGui:FindFirstChild("MainGui")
-                local fU = g and g:FindFirstChild("Fishing")
-                local fs = c:GetAttribute("Fishing")
-                if (fU and fU.Visible) or fs then
-                    h.WalkSpeed = getgenv().SpdFish or 0
-                elseif not getgenv().Noclip then
-                    h.WalkSpeed = getgenv().SpdNorm or 46
-                end
-            end)
-        end
-    end
-end)
-
-run.Stepped:Connect(function()
-    pcall(function()
-        local c = lp.Character
-        if c and getgenv().Noclip then
-            for _, p in ipairs(c:GetDescendants()) do
-                if p:IsA("BasePart") then p.CanCollide = false end
-            end
-        end
-    end)
-end)
-
--- AUTO BOSS
-local eP = CFrame.new(-114.81, 9.28, 1356.67)
-local lP = CFrame.new(-2873.62, 32.17, 1337.38)
-
-task.spawn(function()
-    while task.wait(1) do
-        if getgenv().AutoEnzo or getgenv().AutoLong then
-            pcall(function()
-                local tP = getgenv().AutoLong and lP or eP
-                local c = lp.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    if (c.HumanoidRootPart.Position - tP.Position).Magnitude > 5 then
-                        c.HumanoidRootPart.CFrame = tP
-                    end
-                    local mG = lp.PlayerGui:FindFirstChild("MainGui")
-                    local mM = mG and mG:FindFirstChild("Menu")
-                    if mM then
-                        for _, f in ipairs(mM:GetChildren()) do
-                            if f:IsA("Frame") and f.Visible then
-                                local sF = f:FindFirstChild("Select", true)
-                                local bF = sF and sF:FindFirstChild("button")
-                                if bF then
-                                    local mB = bF:FindFirstChild(getgenv().BossMode)
-                                    if mB then
-                                        if firesignal then firesignal(mB.MouseButton1Click) else mB:Click() end
-                                        task.wait(0.1)
-                                    end
-                                end
-                                local fB = f:FindFirstChild("Fight", true)
-                                if fB then
-                                    if firesignal then firesignal(fB.MouseButton1Click) else fB:Click() end
-                                end
-                            end
-                        end
-                    end
-                end
-            end)
-        end
-    end
-end)
-
-local function mkE(n, t, c)
-    if not n or getgenv().ESPList[n] then return end
-    local h = n:FindFirstChild("HumanoidRootPart") or n.PrimaryPart
-    if not h then return end
+-- esp
+local function makeEsp(npc, typ, col)
+    if not npc or getgenv().ESPList[npc] then return end
+    local hrp = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart
+    if not hrp then return end
     local hl = Instance.new("Highlight")
-    hl.Adornee = n
+    hl.Adornee = npc
     hl.FillTransparency = 1
-    hl.OutlineColor = c
+    hl.OutlineColor = col
     hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    hl.Parent = n
-    local bb = Instance.new("BillboardGui")
-    bb.Size = UDim2.fromOffset(150, 36)
-    bb.StudsOffset = Vector3.new(0, 3.2, 0)
-    bb.AlwaysOnTop = true
-    bb.Adornee = h
-    bb.Parent = n
-    local tx = Instance.new("TextLabel", bb)
-    tx.Size = UDim2.new(1, 0, 1, 0)
-    tx.BackgroundTransparency = 1
-    tx.Text = n.Name
-    tx.TextColor3 = c
-    tx.TextStrokeTransparency = 0.2
-    tx.Font = Enum.Font.GothamBold
-    tx.TextSize = 13
-    getgenv().ESPList[n] = {hl = hl, bill = bb, typ = t}
+    hl.Parent = npc
+    local bill = Instance.new("BillboardGui")
+    bill.Size = UDim2.fromOffset(150, 36)
+    bill.StudsOffset = Vector3.new(0, 3.2, 0)
+    bill.AlwaysOnTop = true
+    bill.Adornee = hrp
+    bill.Parent = npc
+    local t = Instance.new("TextLabel", bill)
+    t.Size = UDim2.new(1, 0, 1, 0)
+    t.BackgroundTransparency = 1
+    t.Text = npc.Name
+    t.TextColor3 = col
+    t.TextStrokeTransparency = 0.2
+    t.Font = Enum.Font.GothamBold
+    t.TextSize = 13
+    getgenv().ESPList[npc] = {hl = hl, bill = bill, typ = typ}
 end
 
 task.spawn(function()
     while task.wait(1.1) do
-        if getgenv().ESP_T or getgenv().ESP_M then
+        if getgenv().ESP_Taoist or getgenv().ESP_Maoshan then
             for _, o in ipairs(workspace:GetDescendants()) do
-                if o:IsA("Model") and o ~= lp.Character and not p:GetPlayerFromCharacter(o) then
+                if o:IsA("Model") and o ~= lp.Character and not Players:GetPlayerFromCharacter(o) then
                     local n = string.lower(o.Name)
-                    if n:find("taoist") and getgenv().ESP_T then
-                        mkE(o, "Taoist", Color3.fromRGB(255, 160, 40))
-                    elseif n:find("maoshan") and getgenv().ESP_M then
-                        mkE(o, "Maoshan", Color3.fromRGB(170, 40, 255))
+                    if n:find("taoist") and getgenv().ESP_Taoist then
+                        makeEsp(o, "Taoist", Color3.fromRGB(255, 160, 40))
+                    elseif n:find("maoshan") and getgenv().ESP_Maoshan then
+                        makeEsp(o, "Maoshan", Color3.fromRGB(170, 40, 255))
                     end
                 end
             end
         end
-        if getgenv().ESP_P then
-            for _, pl in ipairs(p:GetPlayers()) do
-                if pl ~= lp and pl.Character and not getgenv().ESPPlayerList[pl] then
-                    local h = pl.Character:FindFirstChild("HumanoidRootPart")
-                    if h then
+        if getgenv().ESP_Player then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= lp and p.Character and not getgenv().ESPPlayerList[p] then
+                    local hrp = p.Character:FindFirstChild("HumanoidRootPart")
+                    if hrp then
                         local hl = Instance.new("Highlight")
-                        hl.Adornee = pl.Character
+                        hl.Adornee = p.Character
                         hl.FillTransparency = 1
                         hl.OutlineColor = Color3.fromRGB(255, 255, 255)
-                        hl.Parent = pl.Character
-                        getgenv().ESPPlayerList[pl] = {hl = hl}
+                        hl.Parent = p.Character
+                        getgenv().ESPPlayerList[p] = {hl = hl}
                     end
                 end
             end
         else
-            for pl, d in pairs(getgenv().ESPPlayerList) do
+            for p, d in pairs(getgenv().ESPPlayerList) do
                 if d.hl then d.hl:Destroy() end
-                getgenv().ESPPlayerList[pl] = nil
+                getgenv().ESPPlayerList[p] = nil
             end
         end
     end
 end)
 
+-- fake btn
 pcall(function()
     for _, g in ipairs({game.CoreGui, lp.PlayerGui}) do
-        local o = g:FindFirstChild("BeoFishBtn")
-        if o then o:Destroy() end
+        local old = g:FindFirstChild("BeoFishBtn")
+        if old then old:Destroy() end
     end
 end)
 local fg = Instance.new("ScreenGui")
@@ -874,50 +695,127 @@ fg.Name = "BeoFishBtn"
 fg.ResetOnSpawn = false
 pcall(function() fg.Parent = game.CoreGui end)
 if not fg.Parent then fg.Parent = lp:WaitForChild("PlayerGui") end
-local fb = Instance.new("TextButton", fg)
-fb.Size = UDim2.new(0, 78, 0, 78)
-fb.Position = UDim2.new(0.86, 0, 0.46, 0)
-fb.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
-fb.Text = "fish"
-fb.TextColor3 = Color3.fromRGB(25, 25, 25)
-fb.Font = Enum.Font.GothamBold
-fb.TextSize = 15
-fb.BorderSizePixel = 0
-fb.Visible = false
-Instance.new("UICorner", fb).CornerRadius = UDim.new(1, 0)
-getgenv().BeoFishButton = fb
-fb.Visible = getgenv().FakeBtn
-fb.MouseButton1Click:Connect(function()
+local fbtn = Instance.new("TextButton", fg)
+fbtn.Size = UDim2.new(0, 78, 0, 78)
+fbtn.Position = UDim2.new(0.86, 0, 0.46, 0)
+fbtn.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
+fbtn.Text = "fish"
+fbtn.TextColor3 = Color3.fromRGB(25, 25, 25)
+fbtn.Font = Enum.Font.GothamBold
+fbtn.TextSize = 15
+fbtn.BorderSizePixel = 0
+fbtn.Visible = false
+Instance.new("UICorner", fbtn).CornerRadius = UDim.new(1, 0)
+getgenv().BeoFishButton = fbtn
+fbtn.Visible = getgenv().FishBtn
+fbtn.MouseButton1Click:Connect(function()
     pcall(function()
-        if ev:FindFirstChild("Fishing") then ev.Fishing:FireServer() end
+        if Events:FindFirstChild("Fishing") then Events.Fishing:FireServer() end
     end)
 end)
 
--- MINIGAME
-local rh = ev:FindFirstChild("RhythmHit")
-local kM = {A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D}
-local hN = setmetatable({}, {__mode = "k"})
-local lp2 = 0
-local p2h = {}
+-- HOLD BAR CUNG
+local CENTER = UDim2.new(0.5, 0, 0.5, 0)
+local locking = false
+local barConn, boundBar
+local prog = Events:FindFirstChild("UpdateFishProgression")
 
-local function grab()
-    local m = lp.PlayerGui:FindFirstChild("MainGui")
-    if not m then return end
-    local f = m:FindFirstChild("Fishing")
-    if not f then return end
-    local mo = m:FindFirstChild("Mobile")
-    return {fish = f, rhythm = f:FindFirstChild("Rhythm"), boss = f:FindFirstChild("BossFightBar"), mFish = mo and mo:FindFirstChild("Fishing")}
+local function getFishUI()
+    local main = lp.PlayerGui:FindFirstChild("MainGui")
+    local fish = main and main:FindFirstChild("Fishing")
+    if not fish or not fish.Visible then return nil end
+    local bf = fish:FindFirstChild("BarFrame")
+    local bar = bf and bf:FindFirstChild("Bar")
+    return fish, bar
 end
 
-local function clk(b)
-    if not b then return false end
+local function hardLock()
+    if locking or not getgenv().HoldBar then return end
+    local fish, bar = getFishUI()
+    if not bar then return end
+    locking = true
+    local char = lp.Character
+    if char then
+        pcall(function()
+            if (tonumber(char:GetAttribute("GuildPower")) or 0) < 99999999 then
+                char:SetAttribute("GuildPower", 99999999)
+            end
+            local stats = char:FindFirstChild("Stats")
+            local rp = stats and stats:FindFirstChild("RodPower")
+            if rp then
+                local o = rp.Value
+                rp.Value = o + 1
+                rp.Value = o
+            end
+        end)
+    end
+    pcall(function()
+        bar.AnchorPoint = Vector2.new(0.5, 0.5)
+        bar:TweenPosition(CENTER, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
+        bar.Position = CENTER
+    end)
+    locking = false
+end
+
+local function bindBar()
+    local _, bar = getFishUI()
+    if not bar then return end
+    if bar == boundBar and barConn then return end
+    if barConn then pcall(function() barConn:Disconnect() end) end
+    boundBar = bar
+    barConn = bar:GetPropertyChangedSignal("Position"):Connect(function()
+        if locking or not getgenv().HoldBar then return end
+        if bar.Position.X.Scale ~= 0.5 or bar.Position.Y.Scale ~= 0.5 then
+            hardLock()
+        end
+    end)
+end
+
+RunService.RenderStepped:Connect(function()
+    if not getgenv().HoldBar then return end
+    bindBar()
+    hardLock()
+end)
+
+task.spawn(function()
+    while task.wait(0.08) do
+        if getgenv().HoldBar and prog then
+            local fish = select(1, getFishUI())
+            if fish then pcall(function() prog:FireServer() end) end
+        end
+    end
+end)
+
+-- MINIGAME
+local RhythmHit = Events:FindFirstChild("RhythmHit")
+local keyMap = {A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D}
+local hitNotes = setmetatable({}, {__mode = "k"})
+local lastP2 = 0
+local p2hist = {}
+
+local function grabGui()
+    local main = lp.PlayerGui:FindFirstChild("MainGui")
+    if not main then return end
+    local fish = main:FindFirstChild("Fishing")
+    if not fish then return end
+    local mobile = main:FindFirstChild("Mobile")
+    return {
+        fish = fish,
+        rhythm = fish:FindFirstChild("Rhythm"),
+        boss = fish:FindFirstChild("BossFightBar"),
+        mFish = mobile and mobile:FindFirstChild("Fishing"),
+    }
+end
+
+local function clickBtn(btn)
+    if not btn then return false end
     local ok = false
     if getconnections then
         for _, n in ipairs({"MouseButton1Down", "MouseButton1Click", "Activated"}) do
             pcall(function()
-                local s = b[n]
-                if not s then return end
-                for _, c in pairs(getconnections(s)) do
+                local sig = btn[n]
+                if not sig then return end
+                for _, c in pairs(getconnections(sig)) do
                     if c.Function then task.spawn(c.Function) ok = true
                     elseif c.Fire then c:Fire() ok = true end
                 end
@@ -926,124 +824,107 @@ local function clk(b)
     end
     if firesignal then
         pcall(function()
-            firesignal(b.MouseButton1Down)
-            firesignal(b.MouseButton1Click)
+            firesignal(btn.MouseButton1Down)
+            firesignal(btn.MouseButton1Click)
             ok = true
         end)
     end
     return ok
 end
 
-local function doR(g)
+local function doRhythm(g)
     local r = g.rhythm
     if not r or not r.Visible then return end
-    if not rh or not rh.Parent then rh = ev:FindFirstChild("RhythmHit") end
-    for _, ln in ipairs({"A", "S", "D"}) do
-        local lf = r:FindFirstChild("Progression" .. ln)
+    if not RhythmHit or not RhythmHit.Parent then
+        RhythmHit = Events:FindFirstChild("RhythmHit")
+    end
+    for _, lane in ipairs({"A", "S", "D"}) do
+        local lf = r:FindFirstChild("Progression" .. lane)
         if lf then
             local bf = lf:FindFirstChild("BarFrame")
             local ty = bf and bf.Position.Y.Scale or 0.85
-            local bt, nt = 0.11, nil
+            local best, note = 0.11, nil
             for _, ch in ipairs(lf:GetChildren()) do
-                if ch.Name == "Note_FX" and ch:IsA("GuiObject") and ch.Visible and not hN[ch] then
+                if ch.Name == "Note_FX" and ch:IsA("GuiObject") and ch.Visible and not hitNotes[ch] then
                     local d = math.abs(ch.Position.Y.Scale - ty)
-                    if d < bt then bt = d nt = ch end
+                    if d < best then best = d note = ch end
                 end
             end
-            if nt then
-                hN[nt] = true
-                local b = lf:FindFirstChild("Button") or lf:FindFirstChildWhichIsA("TextButton", true) or lf:FindFirstChildWhichIsA("ImageButton", true)
-                clk(b)
-                local kc = kM[ln]
+            if note then
+                hitNotes[note] = true
+                local btn = lf:FindFirstChild("Button")
+                    or lf:FindFirstChildWhichIsA("TextButton", true)
+                    or lf:FindFirstChildWhichIsA("ImageButton", true)
+                clickBtn(btn)
+                local kc = keyMap[lane]
                 if kc then
                     pcall(function()
-                        vim:SendKeyEvent(true, kc, false, game)
-                        task.delay(0.02, function() vim:SendKeyEvent(false, kc, false, game) end)
+                        VIM:SendKeyEvent(true, kc, false, game)
+                        task.delay(0.02, function()
+                            VIM:SendKeyEvent(false, kc, false, game)
+                        end)
                     end)
                 end
-                if rh then pcall(function() rh:FireServer("hit") end) end
+                if RhythmHit then
+                    pcall(function() RhythmHit:FireServer("hit") end)
+                end
             end
         end
     end
 end
 
-local function doP(g)
-    local b = g.boss
-    if not b or not b.Visible then
-        if #p2h > 0 then table.clear(p2h) end
+local function doPhase2(g)
+    local boss = g.boss
+    if not boss or not boss.Visible then
+        if #p2hist > 0 then table.clear(p2hist) end
         return
     end
-    local br = b:FindFirstChild("Bar")
-    local hb = b:FindFirstChild("Hitbox")
-    if not br or not hb then return end
-    local nw = os.clock()
-    local bw = br.Size.X.Scale
-    local cx = br.Position.X.Scale + bw * (0.5 - br.AnchorPoint.X)
+    local bar = boss:FindFirstChild("Bar")
+    local hb = boss:FindFirstChild("Hitbox")
+    if not bar or not hb then return end
+    local now = os.clock()
+    local bw = bar.Size.X.Scale
+    local cx = bar.Position.X.Scale + bw * (0.5 - bar.AnchorPoint.X)
     local hw = hb.Size.X.Scale
     local hl = hb.Position.X.Scale - hw * hb.AnchorPoint.X
-    table.insert(p2h, {t = nw, x = cx})
-    while #p2h > 1 and nw - p2h[1].t > 0.12 do table.remove(p2h, 1) end
-    if nw - lp2 < 0.12 then return end
-    local ex = cx
-    for i = #p2h, 1, -1 do
-        if p2h[i].t <= nw - 0.03 then ex = p2h[i].x break end
+    table.insert(p2hist, {t = now, x = cx})
+    while #p2hist > 1 and now - p2hist[1].t > 0.12 do
+        table.remove(p2hist, 1)
     end
-    local bad = b:FindFirstChild("HitboxBad")
+    if now - lastP2 < 0.12 then return end
+    local ex = cx
+    for i = #p2hist, 1, -1 do
+        if p2hist[i].t <= now - 0.03 then
+            ex = p2hist[i].x
+            break
+        end
+    end
+    local bad = boss:FindFirstChild("HitboxBad")
     if bad and bad.Visible then
         local bbw = bad.Size.X.Scale
         local bl = bad.Position.X.Scale - bbw * bad.AnchorPoint.X
         if ex >= bl and ex <= bl + bbw then return end
     end
-    local pd = hw * 0.2
-    if ex >= hl - pd and ex <= hl + hw + pd then
-        lp2 = nw
-        if not clk(g.mFish) then
+    local pad = hw * 0.2
+    if ex >= hl - pad and ex <= hl + hw + pad then
+        lastP2 = now
+        if not clickBtn(g.mFish) then
             pcall(function()
-                vim:SendMouseButtonEvent(0, 0, 0, true, game, 0)
-                task.delay(0.015, function() vim:SendMouseButtonEvent(0, 0, 0, false, game, 0) end)
+                VIM:SendMouseButtonEvent(0, 0, 0, true, game, 0)
+                task.delay(0.015, function()
+                    VIM:SendMouseButtonEvent(0, 0, 0, false, game, 0)
+                end)
             end)
         end
     end
 end
 
-run.RenderStepped:Connect(function()
-    if not getgenv().MiniGame and not getgenv().HoldBar then return end
+RunService.RenderStepped:Connect(function()
+    if not getgenv().AutoMiniGame then return end
     pcall(function()
-        local g = grab()
+        local g = grabGui()
         if not g or not g.fish or not g.fish.Visible then return end
-        if getgenv().MiniGame then
-            doR(g)
-            doP(g)
-        end
+        doRhythm(g)
+        doPhase2(g)
     end)
-end)
-
-local vu = game:GetService("VirtualUser")
-lp.Idled:Connect(function()
-    vu:CaptureController()
-    vu:ClickButton2(Vector2.new())
-end)
-
-getgenv().AutoRejoin = true
-lp.OnTeleport:Connect(function(s)
-    if getgenv().AutoRejoin and (s == Enum.TeleportState.Started or s == Enum.TeleportState.InProgress) then
-        pcall(function()
-            writefile(fl .. "/lastJob.txt", game.JobId)
-        end)
-    end
-end)
-
-p.PlayerRemoving:Connect(function(pl)
-    if pl == lp and getgenv().AutoRejoin then
-        pcall(function()
-            local jp = fl .. "/lastJob.txt"
-            if isfile(jp) then
-                local jd = readfile(jp)
-                if jd and jd ~= "" then
-                    task.wait(5)
-                    ts:TeleportToPlaceInstance(p.GameId, jd, pl)
-                end
-            end
-        end)
-    end
 end)
