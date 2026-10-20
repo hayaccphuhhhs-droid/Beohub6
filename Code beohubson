@@ -31,7 +31,7 @@ getgenv().ESPList = getgenv().ESPList or {}
 getgenv().ESPPlayerList = getgenv().ESPPlayerList or {}
 getgenv().BeoFishButton = nil
 
--- LOAD CONFIG
+-- LOAD CFG
 local fl = "BeoHubCfg"
 local fPath = fl .. "/data.json"
 
@@ -40,9 +40,7 @@ local function loadCfg()
         if isfile(fPath) then
             local t = HS:JSONDecode(readfile(fPath))
             for k, v in pairs(t) do
-                if getgenv()[k] ~= nil then
-                    getgenv()[k] = v
-                end
+                if getgenv()[k] ~= nil then getgenv()[k] = v end
             end
         end
     end)
@@ -268,9 +266,7 @@ local function saveCfg()
         local t = {}
         for k, v in pairs(getgenv()) do
             if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
-                if k ~= "AntiAdmin" and k ~= "AdminIn" then 
-                    t[k] = v 
-                end
+                if k ~= "AntiAdmin" and k ~= "AdminIn" then t[k] = v end
             end
         end
         writefile(fPath, HS:JSONEncode(t))
@@ -647,7 +643,6 @@ spawn(function()
             local h = c:FindFirstChildOfClass("Humanoid")
             if not h or h.Health <= 0 then return end
             local function gap() task.wait(0.15 + math.random() * 0.05) end
-            
             if getgenv().AllSkill then
                 useSk("Z") gap() useSk("X") gap() useSk("C") gap() useSk("V")
             else
@@ -715,39 +710,32 @@ spawn(function()
     end
 end)
 
--- Auto Reel
-local uProg = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
+-- AUTO REEL (Ép cứng 0.5)
+local prog = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
 local isTwe = false
 
-local function lockB()
-    if isTwe then return end
-    local gui = lp.PlayerGui:FindFirstChild("MainGui")
-    local fUI = gui and gui:FindFirstChild("Fishing")
-    if not fUI or not fUI.Visible then return end
-    
-    local bF = fUI:FindFirstChild("BarFrame")
-    local b = bF and bF:FindFirstChild("Bar")
-    
-    if b and b.Position.X.Scale ~= 0.5 then
-        isTwe = true
-        b:TweenPosition(UDim2.new(0.5, 0, b.Position.Y.Scale, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
-        task.delay(0.05, function() isTwe = false end)
-    end
-end
-
 spawn(function()
-    while task.wait(0.1) do
+    while task.wait(0.05) do
         if getgenv().HoldBar then
             local gui = lp.PlayerGui:FindFirstChild("MainGui")
             local fUI = gui and gui:FindFirstChild("Fishing")
+            
             if fUI and fUI.Visible then
-                lockB()
-                if uProg then
-                    pcall(function() uProg:FireServer() end)
+                local bF = fUI:FindFirstChild("BarFrame")
+                local b = bF and bF:FindFirstChild("Bar")
+                
+                if b and b.Position.X.Scale ~= 0.5 then
+                    isTwe = true
+                    b.Position = UDim2.new(0.5, 0, b.Position.Y.Scale, 0)
+                    task.delay(0.02, function() isTwe = false end)
+                end
+                
+                if prog then
+                    pcall(function() prog:FireServer() end)
                 end
             end
         end
-        task.wait(0.15)
+        task.wait(0.1)
     end
 end)
 
@@ -1258,7 +1246,7 @@ game:GetService("Players").PlayerRemoving:Connect(function(p)
                 local jId = readfile(jPath)
                 if jId and jId ~= "" then
                     task.wait(5)
-                    TS:TeleportToPlaceInstance(game.PlaceId, jId, p)
+                    TS:TeleportToPlaceInstance(pId, jId, p)
                 end
             end
         end)
