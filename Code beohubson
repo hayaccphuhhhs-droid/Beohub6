@@ -33,7 +33,7 @@ local function loadCfg()
         if isfile(cfPath) then
             local d = hs:JSONDecode(readfile(cfPath))
             for k, v in pairs(d) do
-                if getgenv()[k] \~= nil then getgenv()[k] = v end
+                if getgenv()[k] ~= nil then getgenv()[k] = v end
             end
         end
     end)
@@ -51,19 +51,10 @@ local function hasAdm()
 end
 
 local function killAll()
-    getgenv().AutoSell = false
-    getgenv().HoldBar = false
-    getgenv().MiniGame = false
-    getgenv().Noclip = false
-    getgenv().AllSkill = false
-    getgenv().Water = false
-    getgenv().AutoCast = false
-    getgenv().ESP_T = false
-    getgenv().ESP_M = false
-    getgenv().ESP_P = false
-    getgenv().AutoEnzo = false
-    getgenv().AutoLong = false
-    getgenv().AutoBuyBait = false
+    getgenv().AutoSell = false; getgenv().HoldBar = false; getgenv().MiniGame = false
+    getgenv().Noclip = false; getgenv().AllSkill = false; getgenv().Water = false
+    getgenv().AutoCast = false; getgenv().ESP_T = false; getgenv().ESP_M = false; getgenv().ESP_P = false
+    getgenv().AutoEnzo = false; getgenv().AutoLong = false; getgenv().AutoBuyBait = false
 end
 
 task.spawn(function()
@@ -72,9 +63,7 @@ task.spawn(function()
             if hasAdm() and not getgenv().AdminIn then
                 getgenv().AdminIn = true
                 killAll()
-                pcall(function()
-                    sg:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5})
-                end)
+                pcall(function() sg:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
             elseif not hasAdm() then
                 getgenv().AdminIn = false
             end
@@ -218,26 +207,7 @@ end
 bubble.MouseButton1Click:Connect(function() toggleUI(not opened) end)
 closeB.MouseButton1Click:Connect(function() toggleUI(false) end)
 
-getgenv()._BeoUI = {
-    ac = ac, bg = bg, sd = sd, cd = cd,
-    main = main, side = side, cont = cont,
-    getNum = getNum, uis = uis, hs = hs,
-    cf = cf, cfPath = cfPath, me = me,
-    tp = tp, rep = rep
-}
-local U = getgenv()._BeoUI
-local ac, cd = U.ac, U.cd
-local cont, side = U.cont, U.side
-local getNum, uis, hs = U.getNum, U.uis, U.hs
-local cf, cfPath = U.cf, U.cfPath
-local me, tp, rep = U.me, U.tp, U.rep
-
-local pages, tabs = {}, {}
-local num = 0
-local function getNum2()
-    num = num + 1
-    return num
-end
+local pages, tabs = {}
 
 local function clear()
     num = 0
@@ -285,7 +255,7 @@ local function section(t)
     l.Font = Enum.Font.GothamBold
     l.TextSize = 12
     l.TextXAlignment = Enum.TextXAlignment.Left
-    l.LayoutOrder = getNum2()
+    l.LayoutOrder = getNum()
 end
 
 local function saveCfg()
@@ -294,7 +264,7 @@ local function saveCfg()
         local d = {}
         for k, v in pairs(getgenv()) do
             if type(v) == "boolean" or type(v) == "number" or type(v) == "string" then
-                if k \~= "AntiAdmin" and k \~= "AdminIn" then d[k] = v end
+                if k ~= "AntiAdmin" and k ~= "AdminIn" then d[k] = v end
             end
         end
         writefile(cfPath, hs:JSONEncode(d))
@@ -306,7 +276,7 @@ local function addToggle(t, get, set)
     r.Size = UDim2.new(1, -4, 0, 34)
     r.BackgroundColor3 = cd
     r.BorderSizePixel = 0
-    r.LayoutOrder = getNum2()
+    r.LayoutOrder = getNum()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", r)
     l.Size = UDim2.new(1, -70, 1, 0)
@@ -352,7 +322,7 @@ local function addBtn(t, cb)
     b.Font = Enum.Font.GothamBold
     b.TextSize = 12
     b.BorderSizePixel = 0
-    b.LayoutOrder = getNum2()
+    b.LayoutOrder = getNum()
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
     b.MouseButton1Click:Connect(function() pcall(cb) end)
 end
@@ -362,7 +332,7 @@ local function addSlider(t, min, max, get, set)
     r.Size = UDim2.new(1, -4, 0, 50)
     r.BackgroundColor3 = cd
     r.BorderSizePixel = 0
-    r.LayoutOrder = getNum2()
+    r.LayoutOrder = getNum()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", r)
     l.Size = UDim2.new(1, -20, 0, 20)
@@ -417,7 +387,7 @@ local function addSkillRow()
     r.Size = UDim2.new(1, -4, 0, 34)
     r.BackgroundColor3 = cd
     r.BorderSizePixel = 0
-    r.LayoutOrder = getNum2()
+    r.LayoutOrder = getNum()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local sk = {"Z", "X", "C", "V"}
     for i, k in ipairs(sk) do
@@ -454,7 +424,7 @@ local function addModeRow()
     r.Size = UDim2.new(1, -4, 0, 34)
     r.BackgroundColor3 = cd
     r.BorderSizePixel = 0
-    r.LayoutOrder = getNum2()
+    r.LayoutOrder = getNum()
     Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
     local l = Instance.new("TextLabel", r)
     l.Size = UDim2.new(0, 60, 1, 0)
@@ -484,7 +454,6 @@ local function addModeRow()
         saveCfg()
     end)
 end
-
 pages.Fish = function()
     section("AUTO FISH")
     addToggle("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
@@ -541,6 +510,7 @@ pages.Shop = function()
     addBtn("Sell All Now", function()
         if rep.Events and rep.Events.SellFish then rep.Events.SellFish:FireServer("All") end
     end)
+
     section("AUTO BUY BAIT")
     addToggle("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
     addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
@@ -571,12 +541,11 @@ pages.More = function()
     end)
     section("SERVER")
     addBtn("Hop Low Players", function()
-        local d = hs:JSONDecode(game:HttpGet(
-            "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        local d = hs:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
         local best, minP = nil, 999
         if d and d.data then
             for _, s in ipairs(d.data) do
-                if s.playing < minP and s.playing > 0 and s.id \~= game.JobId then
+                if s.playing < minP and s.playing > 0 and s.id ~= game.JobId then
                     minP = s.playing
                     best = s.id
                 end
@@ -585,7 +554,7 @@ pages.More = function()
         if best then tp:TeleportToPlaceInstance(game.PlaceId, best, me) end
     end)
     addBtn("Copy JobId", function()
-        if game.JobId \~= "" then setclipboard(game.JobId) end
+        if game.JobId ~= "" then setclipboard(game.JobId) end
     end)
 end
 
@@ -671,7 +640,6 @@ task.spawn(function()
     end
 end)
 
--- AUTO REEL
 local uProg = rep:FindFirstChild("Events") and rep.Events:FindFirstChild("UpdateFishProgression")
 local centerPos = UDim2.new(0.5, 0, 0.5, 0)
 local locking = false
@@ -792,7 +760,6 @@ run.Stepped:Connect(function()
     end)
 end)
 
--- AUTO BOSS
 local enzoPos = CFrame.new(-114.81, 9.28, 1356.67)
 local longPos = CFrame.new(-2873.62, 32.17, 1337.38)
 
@@ -833,7 +800,6 @@ task.spawn(function()
     end
 end)
 
--- ESP
 local function makeESP(npc, typ, color)
     if not npc or getgenv().ESPList[npc] then return end
     local h = npc:FindFirstChild("HumanoidRootPart") or npc.PrimaryPart
@@ -898,7 +864,6 @@ task.spawn(function()
     end
 end)
 
--- FAKE BUTTON
 pcall(function()
     for _, g in ipairs({game.CoreGui, me.PlayerGui}) do
         local o = g:FindFirstChild("BeoFishBtn")
@@ -929,7 +894,6 @@ fishBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- MINIGAME
 local rhythmEv = evs:FindFirstChild("RhythmHit")
 local keyMap = {A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D}
 local hitNotes = setmetatable({}, {__mode = "k"})
