@@ -9,6 +9,18 @@ local uis = game:GetService("UserInputService")
 local me = plrs.LocalPlayer
 local evs = rep:FindFirstChild("Events") or rep
 
+-- Intro Notification
+task.delay(1.5, function()
+    pcall(function()
+        sg:SetCore("SendNotification", {
+            Title = "BeoHub v7",
+            Text = "Script loaded successfully! Keyless & Safe.",
+            Icon = "rbxassetid://119370751164598",
+            Duration = 5
+        })
+    end)
+end)
+
 local def = {
     AutoSell = false, SellDelay = 5, AutoBuyBait = false, BuyBaitName = "", BuyBaitAmount = 1, BuyBaitDelay = 5,
     AutoCraftBait = false, CraftBaitName = "", CraftBaitAmount = 1,
