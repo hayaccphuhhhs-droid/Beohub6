@@ -418,42 +418,6 @@ local function addSlider(t, min, max, get, set)
     end)
 end
 
-local function addInput(t, get, set)
-    local r = Instance.new("Frame", cont)
-    r.Size = UDim2.new(1, -4, 0, 34)
-    r.BackgroundColor3 = cd
-    r.BorderSizePixel = 0
-    r.LayoutOrder = getNum2()
-    Instance.new("UICorner", r).CornerRadius = UDim.new(0, 8)
-    local l = Instance.new("TextLabel", r)
-    l.Size = UDim2.new(0, 100, 1, 0)
-    l.Position = UDim2.new(0, 12, 0, 0)
-    l.BackgroundTransparency = 1
-    l.Text = t
-    l.TextColor3 = Color3.fromRGB(230, 235, 245)
-    l.Font = Enum.Font.Gotham
-    l.TextSize = 13
-    l.TextXAlignment = Enum.TextXAlignment.Left
-    local box = Instance.new("TextBox", r)
-    box.Size = UDim2.new(1, -130, 0, 24)
-    box.Position = UDim2.new(1, -118, 0.5, -12)
-    box.BackgroundColor3 = Color3.fromRGB(10, 12, 18)
-    box.TextColor3 = Color3.fromRGB(220, 235, 255)
-    box.PlaceholderText = "..."
-    box.PlaceholderColor3 = Color3.fromRGB(90, 100, 120)
-    box.Font = Enum.Font.Gotham
-    box.TextSize = 12
-    box.Text = tostring(get() or "")
-    box.BorderSizePixel = 0
-    Instance.new("UICorner", box).CornerRadius = UDim.new(0, 6)
-    local stroke = Instance.new("UIStroke", box)
-    stroke.Color = Color3.fromRGB(40, 50, 70)
-    box.FocusLost:Connect(function()
-        set(box.Text)
-        saveCfg()
-    end)
-end
-
 local function addSkillRow()
     local r = Instance.new("Frame", cont)
     r.Size = UDim2.new(1, -4, 0, 34)
@@ -526,7 +490,6 @@ local function addModeRow()
         saveCfg()
     end)
 end
--- lấy danh sách bait/cần tự động
 local function getBaitList()
     local list, seen = {}, {}
     local info = rep:FindFirstChild("Info")
@@ -536,6 +499,44 @@ local function getBaitList()
             if c:IsA("ModuleScript") and not seen[c.Name] then
                 seen[c.Name] = true
                 table.insert(list, c.Name)
+            end
+        end
+    end
+    table.sort(list)
+    return list
+end
+
+local function getBuyableBaitList()
+    local list, seen = {}, {}
+    local info = rep:FindFirstChild("Info")
+    local bf = info and info:FindFirstChild("Bait")
+    if bf then
+        for _, c in ipairs(bf:GetChildren()) do
+            if c:IsA("ModuleScript") then
+                local ok, data = pcall(require, c)
+                if ok and type(data) == "table" and not data.Ingredient and not seen[c.Name] then
+                    seen[c.Name] = true
+                    table.insert(list, c.Name)
+                end
+            end
+        end
+    end
+    table.sort(list)
+    return list
+end
+
+local function getCraftableBaitList()
+    local list, seen = {}, {}
+    local info = rep:FindFirstChild("Info")
+    local bf = info and info:FindFirstChild("Bait")
+    if bf then
+        for _, c in ipairs(bf:GetChildren()) do
+            if c:IsA("ModuleScript") then
+                local ok, data = pcall(require, c)
+                if ok and type(data) == "table" and data.Ingredient and not seen[c.Name] then
+                    seen[c.Name] = true
+                    table.insert(list, c.Name)
+                end
             end
         end
     end
@@ -562,7 +563,6 @@ local function getRodList()
     return list
 end
 
--- dropdown popup
 local function addDropdown(t, list, get, set)
     local r = Instance.new("Frame", cont)
     r.Size = UDim2.new(1, -4, 0, 34)
@@ -672,7 +672,6 @@ local function addDropdown(t, list, get, set)
     end)
 end
 
--- pages
 pages.Fish = function()
     section("AUTO FISH")
     addToggle("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
@@ -758,6 +757,7 @@ pages.Shop = function()
         if ev then ev:FireServer(getgenv().CraftRodName) end
     end)
 end
+
 pages.ESP = function()
     section("ESP")
     addToggle("Taoist", function() return getgenv().ESP_T end, function(v) getgenv().ESP_T = v end)
@@ -1110,7 +1110,6 @@ task.spawn(function()
         end
     end
 end)
--- esp
 local eT = {}
 
 local function clrE()
