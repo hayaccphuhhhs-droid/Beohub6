@@ -589,7 +589,7 @@ local function addDropdown(t, list, get, set)
     b.TextColor3 = Color3.fromRGB(220, 235, 255)
     b.Font = Enum.Font.Gotham
     b.TextSize = 12
-    b.TextXAlignment = Enum.TextXAlignment.Center -- ✅ Căn giữa chữ
+    b.TextXAlignment = Enum.TextXAlignment.Center
     b.BorderSizePixel = 0
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 6)
     Instance.new("UIStroke", b).Color = Color3.fromRGB(40, 50, 70)
@@ -656,7 +656,7 @@ local function addDropdown(t, list, get, set)
             opt.TextColor3 = Color3.fromRGB(220, 235, 255)
             opt.Font = Enum.Font.Gotham
             opt.TextSize = 12
-            opt.TextXAlignment = Enum.TextXAlignment.Center -- ✅ Căn giữa list
+            opt.TextXAlignment = Enum.TextXAlignment.Center
             opt.BorderSizePixel = 0
             opt.ZIndex = 20
             Instance.new("UICorner", opt).CornerRadius = UDim.new(0, 6)
@@ -673,7 +673,6 @@ local function addDropdown(t, list, get, set)
         popup.Visible = not popup.Visible
     end)
 end
-
 pages.Fish = function()
     section("AUTO FISH")
     addToggle("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
@@ -902,7 +901,6 @@ task.spawn(function()
     end
 end)
 
--- auto reel
 local uP = rep:FindFirstChild("Events") and rep.Events:FindFirstChild("UpdateFishProgression")
 local cP = UDim2.new(0.5, 0, 0.5, 0)
 local lk = false
@@ -1024,7 +1022,6 @@ run.Stepped:Connect(function()
     end)
 end)
 
--- auto boss
 local ez = CFrame.new(-114.81, 9.28, 1356.67)
 local lg = CFrame.new(-2873.62, 32.17, 1337.38)
 
@@ -1065,7 +1062,6 @@ task.spawn(function()
     end
 end)
 
--- auto buy / craft
 local lastBuy = 0
 local lastCraftBait = 0
 local lastCraftRod = 0
@@ -1112,6 +1108,7 @@ task.spawn(function()
         end
     end
 end)
+
 local eT = {}
 
 local function clrE()
@@ -1247,7 +1244,6 @@ task.spawn(function()
     end
 end)
 
--- fake button
 pcall(function()
     for _, g in ipairs({game.CoreGui, me.PlayerGui}) do
         local o = g:FindFirstChild("BeoFishBtn")
@@ -1282,76 +1278,42 @@ fb.MouseButton1Click:Connect(function()
         end
     end)
 end)
+local rhythmLanes = {"A", "S", "D"}
+local rhythmKeyMap = {
+    A = Enum.KeyCode.A,
+    S = Enum.KeyCode.S,
+    D = Enum.KeyCode.D
+}
+local lastRhythmLaneHit = {A = 0, S = 0, D = 0}
+local lastRhythmScan = 0
+local lastPhase2HitTick = 0
+local phase2BarHistory = {}
+local CENTER_BAR_POS = UDim2.new(0.5, 0, 0.5, 0)
+local isLockingBar = false
+local barPosConn = nil
+local boundBar = nil
+local getupval = debug and debug.getupvalue or getupvalue
 
--- minigame
-local function StepRhythmMiniGame()
-    local RG = FishingGui and FishingGui:FindFirstChild("Rhythm")
-    if not RG or not RG.Visible then return end
+local function LockFishingBar()
+    if isLockingBar then return end
+    if not FishingGui or not FishingGui.Visible or not FishingBar then return end
+    if not (getgenv().HoldBar or getgenv().MiniGame) then return end
 
-    local now = os.clock()
-    
-    -- Random time (0.03s - 0.07s)
-    local scanDelay = 0.03 + math.random() * 0.04
-    if now - lastRhythmScan < scanDelay then return end
-    lastRhythmScan = now
-
-    local RhythmHitEvent = evs:FindFirstChild("RhythmHit")
-
-    for _, lane in ipairs(rhythmLanes) do
-        -- Random thời gian chờ (0.05s - 0.1s)
-        local hitDelay = 0.05 + math.random() * 0.05
-        if now - (lastRhythmLaneHit[lane] or 0) >= hitDelay then
-            local laneFrame = RG:FindFirstChild("Progression" .. lane)
-            if laneFrame then
-                local barFrame = laneFrame:FindFirstChild("BarFrame")
-                local targetY = barFrame and barFrame.Position.Y.Scale or 0.85
-                local targetNote = nil
-                local bestDist = 0.18
-
-                for _, child in ipairs(laneFrame:GetChildren()) do
-                    if child.Name == "Note_FX" and child:IsA("GuiObject") and child.Visible then
-                        local dist = math.abs(child.Position.Y.Scale - targetY)
-                        if dist <= bestDist then
-                            bestDist = dist
-                            targetNote = child
-                        end
-                    end
-                end
-
-                if targetNote then
-                    lastRhythmLaneHit[lane] = now
-                    local btn = laneFrame:FindFirstChild("Button")
-                    if btn then
-                        TriggerGuiButton(btn)
-                    end
-
-                    if targetNote.Parent ~= nil then
-                        local kc = rhythmKeyMap[lane]
-                        if kc then
-                            -- Random thời gian giữ phím (0.02s - 0.04s)
-                            local holdTime = 0.02 + math.random() * 0.02
-                            pcall(function()
-                                vim:SendKeyEvent(true, kc, false, game)
-                                task.delay(holdTime, function()
-                                    vim:SendKeyEvent(false, kc, false, game)
-                                end)
-                            end)
-                        end
-                    end
-
-                    -- Remote event
-                    if targetNote.Parent ~= nil and bestDist <= 0.1 and RhythmHitEvent then
-                        pcall(function()
-                            targetNote:Destroy()
-                            RhythmHitEvent:FireServer("hit")
-                        end)
-                    end
-                end
+    isLockingBar = true
+    local c = me.Character
+    if c and (tonumber(c:GetAttribute("GuildPower")) or 0) < 99999999 then
+        pcall(function()
+            c:SetAttribute("GuildPower", 99999999)
+            local stats = c:FindFirstChild("Stats")
+            local rp = stats and stats:FindFirstChild("RodPower")
+            if rp then
+                local o = rp.Value
+                rp.Value = o + 1
+                rp.Value = o
             end
-        end
+        end)
     end
-end
-pcall(function()
+    pcall(function()
         FishingBar:TweenPosition(CENTER_BAR_POS, Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0, true)
         FishingBar.Position = CENTER_BAR_POS
     end)
@@ -1560,13 +1522,16 @@ local function StepRhythmMiniGame()
     if not RG or not RG.Visible then return end
 
     local now = os.clock()
-    if now - lastRhythmScan < 0.025 then return end
+    
+    local scanDelay = 0.03 + math.random() * 0.04
+    if now - lastRhythmScan < scanDelay then return end
     lastRhythmScan = now
 
     local RhythmHitEvent = evs:FindFirstChild("RhythmHit")
 
     for _, lane in ipairs(rhythmLanes) do
-        if now - (lastRhythmLaneHit[lane] or 0) >= 0.05 then
+        local hitDelay = 0.05 + math.random() * 0.05
+        if now - (lastRhythmLaneHit[lane] or 0) >= hitDelay then
             local laneFrame = RG:FindFirstChild("Progression" .. lane)
             if laneFrame then
                 local barFrame = laneFrame:FindFirstChild("BarFrame")
@@ -1594,9 +1559,10 @@ local function StepRhythmMiniGame()
                     if targetNote.Parent ~= nil then
                         local kc = rhythmKeyMap[lane]
                         if kc then
+                            local holdTime = 0.02 + math.random() * 0.02
                             pcall(function()
                                 vim:SendKeyEvent(true, kc, false, game)
-                                task.delay(0.02, function()
+                                task.delay(holdTime, function()
                                     vim:SendKeyEvent(false, kc, false, game)
                                 end)
                             end)
