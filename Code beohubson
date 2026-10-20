@@ -1,15 +1,15 @@
-local p = game:GetService("Players")
-local rs = game:GetService("ReplicatedStorage")
-local run = game:GetService("RunService")
-local vim = game:GetService("VirtualInputManager")
-local ts = game:GetService("TeleportService")
-local sg = game:GetService("StarterGui")
-local hs = game:GetService("HttpService")
-local uis = game:GetService("UserInputService")
-local lp = p.LocalPlayer
-local ev = rs:FindFirstChild("Events") or rs
+local Players = game:GetService("Players")
+local RS = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local VIM = game:GetService("VirtualInputManager")
+local TS = game:GetService("TeleportService")
+local SG = game:GetService("StarterGui")
+local HS = game:GetService("HttpService")
+local UIS = game:GetService("UserInputService")
+local lp = Players.LocalPlayer
+local Events = RS:FindFirstChild("Events") or RS
 
-local def = {
+local _def = {
     AutoSell = false, SellDelay = 5, AutoBuyBait = false, BuyBaitAmount = 1, BuyBaitDelay = 5,
     HoldBar = false, MiniGame = false, Noclip = false,
     AllSkill = false, SkZ = false, SkX = false, SkC = false, SkV = false,
@@ -18,7 +18,7 @@ local def = {
     SpdNorm = 46, SpdFish = 0, FakeBtn = false,
     AutoEnzo = false, AutoLong = false, BossMode = "Normal"
 }
-for k, v in pairs(def) do
+for k, v in pairs(_def) do
     if getgenv()[k] == nil then getgenv()[k] = v end
 end
 getgenv().ESPList = getgenv().ESPList or {}
@@ -31,7 +31,7 @@ local fp = fl .. "/data.json"
 local function loadC()
     pcall(function()
         if isfile(fp) then
-            local t = hs:JSONDecode(readfile(fp))
+            local t = HS:JSONDecode(readfile(fp))
             for k, v in pairs(t) do
                 if getgenv()[k] ~= nil then getgenv()[k] = v end
             end
@@ -42,7 +42,7 @@ loadC()
 
 local admins = {"tom_iceren", "ctgthecreator"}
 local function isAdm()
-    for _, pl in ipairs(p:GetPlayers()) do
+    for _, pl in ipairs(Players:GetPlayers()) do
         for _, a in ipairs(admins) do
             if pl.Name:lower() == a:lower() then return true end
         end
@@ -63,7 +63,7 @@ task.spawn(function()
             if isAdm() and not getgenv().AdminIn then
                 getgenv().AdminIn = true
                 kill()
-                pcall(function() sg:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
+                pcall(function() SG:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
             elseif not isAdm() then
                 getgenv().AdminIn = false
             end
@@ -184,7 +184,7 @@ local function drag(o, isM)
             end)
         end
     end)
-    uis.InputChanged:Connect(function(i)
+    UIS.InputChanged:Connect(function(i)
         if dr and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
             local d = i.Position - sp
             local t = isM and main or o
@@ -264,7 +264,7 @@ local function saveC()
                 if k ~= "AntiAdmin" and k ~= "AdminIn" then t[k] = v end
             end
         end
-        writefile(fp, hs:JSONEncode(t))
+        writefile(fp, HS:JSONEncode(t))
     end)
 end
 
@@ -357,7 +357,7 @@ local function sld(t, mn, mx, g, s)
     dr.Text = ""
     dr.MouseButton1Down:Connect(function()
         local dg = true
-        uis.InputChanged:Connect(function(i)
+        UIS.InputChanged:Connect(function(i)
             if dg and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
                 local mx = i.Position.X
                 local rl = math.clamp((mx - bar.AbsolutePosition.X) / bar.AbsoluteSize.X, 0, 1)
@@ -368,7 +368,7 @@ local function sld(t, mn, mx, g, s)
                 saveC()
             end
         end)
-        uis.InputEnded:Connect(function(i)
+        UIS.InputEnded:Connect(function(i)
             if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
                 dg = false
             end
@@ -502,7 +502,7 @@ pages.Shop = function()
     tglBtn("Auto Sell All", function() return getgenv().AutoSell end, function(v) getgenv().AutoSell = v end)
     sld("Sell Delay (Sec)", 1, 60, function() return getgenv().SellDelay end, function(v) getgenv().SellDelay = v end)
     btn("Sell All Now", function()
-        if rs.Events and rs.Events.SellFish then rs.Events.SellFish:FireServer("All") end
+        if RS.Events and RS.Events.SellFish then RS.Events.SellFish:FireServer("All") end
     end)
 
     sec("AUTO BUY BAIT")
@@ -510,7 +510,7 @@ pages.Shop = function()
     sld("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
     sld("Buy Delay (Sec)", 5, 120, function() return getgenv().BuyBaitDelay end, function(v) getgenv().BuyBaitDelay = v end)
 
-    local Info = rs:FindFirstChild("Info")
+    local Info = RS:FindFirstChild("Info")
     local bF = Info and Info:FindFirstChild("Bait")
     if bF then
         for _, v in ipairs(bF:GetChildren()) do
@@ -518,11 +518,11 @@ pages.Shop = function()
                 local ok, d = pcall(require, v)
                 if ok and type(d) == "table" and not d.Ingredient then
                     btn("Buy " .. v.Name, function()
-                        local be = rs.Events:FindFirstChild("BuyBait") or rs.Events:FindFirstChild("Bait")
+                        local be = RS.Events:FindFirstChild("BuyBait") or RS.Events:FindFirstChild("Bait")
                         if be then
                             be:FireServer(v.Name, getgenv().BuyBaitAmount)
                         else
-                            rs.Events.CraftBait:FireServer(v.Name, getgenv().BuyBaitAmount)
+                            RS.Events.CraftBait:FireServer(v.Name, getgenv().BuyBaitAmount)
                         end
                     end)
                 end
@@ -539,7 +539,7 @@ pages.Shop = function()
                 if ok and type(d) == "table" and d.Ingredient then
                     hasB = true
                     btn("Craft " .. v.Name, function()
-                        rs.Events.CraftBait:FireServer(v.Name, 10)
+                        RS.Events.CraftBait:FireServer(v.Name, 10)
                     end)
                 end
             end
@@ -557,7 +557,7 @@ pages.Shop = function()
                 if ok and type(d) == "table" and d.Ingredient and d.Type == "Fishing Rod" then
                     hasR = true
                     btn("Craft " .. v.Name, function()
-                        rs.Events.CraftRod:FireServer(v.Name)
+                        RS.Events.CraftRod:FireServer(v.Name)
                     end)
                 end
             end
@@ -590,7 +590,7 @@ pages.More = function()
     end)
     sec("SERVER")
     btn("Hop Low Players", function()
-        local d = hs:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        local d = HS:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
         local b, mp = nil, 999
         if d and d.data then
             for _, s in ipairs(d.data) do
@@ -599,7 +599,7 @@ pages.More = function()
                 end
             end
         end
-        if b then ts:TeleportToPlaceInstance(game.PlaceId, b, lp) end
+        if b then TS:TeleportToPlaceInstance(game.PlaceId, b, lp) end
     end)
     btn("Copy JobId", function() if game.JobId ~= "" then setclipboard(game.JobId) end end)
 end
@@ -611,6 +611,377 @@ mkTab("TP", "T", 4)
 mkTab("ESP", "E", 5)
 mkTab("More", "M", 6)
 show("Fish")
+
+-- LOGIC
+local rem = {"UseSkill","CastSkill","Skill","ActivateSkill","PlaySkill","SkillActivate","DoSkill"}
+local function getR()
+    local e = RS:FindFirstChild("Events") or RS
+    for _, n in ipairs(rem) do
+        local r = e:FindFirstChild(n, true)
+        if r and (r:IsA("RemoteEvent") or r:IsA("RemoteFunction")) then return r end
+    end
+end
+local skR = getR()
+local function useSk(k)
+    if skR then pcall(function() skR:FireServer(k) end) return end
+    pcall(function()
+        VIM:SendKeyEvent(true, Enum.KeyCode[k], false, game)
+        task.wait(0.05)
+        VIM:SendKeyEvent(false, Enum.KeyCode[k], false, game)
+    end)
+end
+
+task.spawn(function()
+    while true do
+        task.wait(0.5 + math.random() * 0.3)
+        pcall(function()
+            local c = lp.Character
+            if not c then return end
+            local h = c:FindFirstChildOfClass("Humanoid")
+            if not h or h.Health <= 0 then return end
+            local function gp() task.wait(0.15 + math.random() * 0.05) end
+            if getgenv().AllSkill then
+                useSk("Z") gp() useSk("X") gp() useSk("C") gp() useSk("V")
+            else
+                if getgenv().SkZ then useSk("Z") gp() end
+                if getgenv().SkX then useSk("X") gp() end
+                if getgenv().SkC then useSk("C") gp() end
+                if getgenv().SkV then useSk("V") end
+            end
+        end)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.3 + math.random() * 0.2)
+        if getgenv().AutoCast then
+            pcall(function()
+                local c = lp.Character
+                local g = lp.PlayerGui:FindFirstChild("MainGui")
+                if c and g then
+                    local fs = c:GetAttribute("Fishing")
+                    local fU = g:FindFirstChild("Fishing")
+                    if not fs and (not fU or not fU.Visible) then
+                        if RS.Events and RS.Events:FindFirstChild("Fishing") then
+                            RS.Events.Fishing:FireServer()
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if getgenv().AutoSell then
+            pcall(function()
+                if RS.Events and RS.Events:FindFirstChild("SellFish") then
+                    RS.Events.SellFish:FireServer("All")
+                end
+            end)
+            task.wait(getgenv().SellDelay or 5)
+        else 
+            task.wait(0.5) 
+        end
+    end
+end)
+
+local prg = RS:FindFirstChild("Events") and RS.Events:FindFirstChild("UpdateFishProgression")
+task.spawn(function()
+    while task.wait(0.05) do
+        if getgenv().HoldBar then
+            local g = lp.PlayerGui:FindFirstChild("MainGui")
+            local fU = g and g:FindFirstChild("Fishing")
+            if fU and fU.Visible then
+                local bF = fU:FindFirstChild("BarFrame")
+                local b = bF and bF:FindFirstChild("Bar")
+                if b then
+                    b.Position = UDim2.new(0.5, 0, b.Position.Y.Scale, 0)
+                end
+                if prg then pcall(function() prg:FireServer() end) end
+            end
+        end
+        task.wait(0.05)
+    end
+end)
+
+local oldW, wSt = {}, false
+task.spawn(function()
+    while task.wait(0.3) do
+        local on = getgenv().Water
+        if on and not wSt then
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("BasePart") and v.Name:lower() == "water" then
+                    oldW[v] = v.CanCollide
+                    v.CanCollide = true
+                end
+            end
+        elseif not on and wSt then
+            for w, o in pairs(oldW) do
+                if w and w.Parent then w.CanCollide = o end
+            end
+            oldW = {}
+        end
+        wSt = on
+    end
+end)
+
+task.spawn(function()
+    while task.wait(0.15) do
+        if getgenv().SpdCtrl then
+            pcall(function()
+                local c = lp.Character
+                local h = c and c:FindFirstChildOfClass("Humanoid")
+                if not h then return end
+                local g = lp.PlayerGui:FindFirstChild("MainGui")
+                local fU = g and g:FindFirstChild("Fishing")
+                local fs = c:GetAttribute("Fishing")
+                if (fU and fU.Visible) or fs then
+                    h.WalkSpeed = getgenv().SpdFish or 0
+                elseif not getgenv().Noclip then
+                    h.WalkSpeed = getgenv().SpdNorm or 46
+                end
+            end)
+        end
+    end
+end)
+
+run.Stepped:Connect(function()
+    pcall(function()
+        local c = lp.Character
+        if c and getgenv().Noclip then
+            for _, p in ipairs(c:GetDescendants()) do
+                if p:IsA("BasePart") then p.CanCollide = false end
+            end
+        end
+    end)
+end)
+
+local eP = CFrame.new(-114.81, 9.28, 1356.67)
+local lP = CFrame.new(-2873.62, 32.17, 1337.38)
+
+task.spawn(function()
+    while task.wait(1) do
+        if getgenv().AutoEnzo or getgenv().AutoLong then
+            pcall(function()
+                local tP = getgenv().AutoLong and lP or eP
+                local c = lp.Character
+                if c and c:FindFirstChild("HumanoidRootPart") then
+                    if (c.HumanoidRootPart.Position - tP.Position).Magnitude > 5 then
+                        c.HumanoidRootPart.CFrame = tP
+                    end
+                    local mG = lp.PlayerGui:FindFirstChild("MainGui")
+                    local mM = mG and mG:FindFirstChild("Menu")
+                    if mM then
+                        for _, f in ipairs(mM:GetChildren()) do
+                            if f:IsA("Frame") and f.Visible then
+                                local sF = f:FindFirstChild("Select", true)
+                                local bF = sF and sF:FindFirstChild("button")
+                                if bF then
+                                    local mB = bF:FindFirstChild(getgenv().BossMode)
+                                    if mB then
+                                        if firesignal then firesignal(mB.MouseButton1Click) else mB:Click() end
+                                        task.wait(0.1)
+                                    end
+                                end
+                                local fB = f:FindFirstChild("Fight", true)
+                                if fB then
+                                    if firesignal then firesignal(fB.MouseButton1Click) else fB:Click() end
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+local function mkE(n, t, c)
+    if not n or getgenv().ESPList[n] then return end
+    local h = n:FindFirstChild("HumanoidRootPart") or n.PrimaryPart
+    if not h then return end
+    local hl = Instance.new("Highlight")
+    hl.Adornee = n
+    hl.FillTransparency = 1
+    hl.OutlineColor = c
+    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    hl.Parent = n
+    local bb = Instance.new("BillboardGui")
+    bb.Size = UDim2.fromOffset(150, 36)
+    bb.StudsOffset = Vector3.new(0, 3.2, 0)
+    bb.AlwaysOnTop = true
+    bb.Adornee = h
+    bb.Parent = n
+    local tx = Instance.new("TextLabel", bb)
+    tx.Size = UDim2.new(1, 0, 1, 0)
+    tx.BackgroundTransparency = 1
+    tx.Text = n.Name
+    tx.TextColor3 = c
+    tx.TextStrokeTransparency = 0.2
+    tx.Font = Enum.Font.GothamBold
+    tx.TextSize = 13
+    getgenv().ESPList[n] = {hl = hl, bill = bb, typ = t}
+end
+
+task.spawn(function()
+    while task.wait(1.1) do
+        if getgenv().ESP_T or getgenv().ESP_M then
+            for _, o in ipairs(workspace:GetDescendants()) do
+                if o:IsA("Model") and o ~= lp.Character and not Players:GetPlayerFromCharacter(o) then
+                    local n = string.lower(o.Name)
+                    if n:find("taoist") and getgenv().ESP_T then
+                        mkE(o, "Taoist", Color3.fromRGB(255, 160, 40))
+                    elseif n:find("maoshan") and getgenv().ESP_M then
+                        mkE(o, "Maoshan", Color3.fromRGB(170, 40, 255))
+                    end
+                end
+            end
+        end
+        if getgenv().ESP_P then
+            for _, pl in ipairs(Players:GetPlayers()) do
+                if pl ~= lp and pl.Character and not getgenv().ESPPlayerList[pl] then
+                    local h = pl.Character:FindFirstChild("HumanoidRootPart")
+                    if h then
+                        local hl = Instance.new("Highlight")
+                        hl.Adornee = pl.Character
+                        hl.FillTransparency = 1
+                        hl.OutlineColor = Color3.fromRGB(255, 255, 255)
+                        hl.Parent = pl.Character
+                        getgenv().ESPPlayerList[pl] = {hl = hl}
+                    end
+                end
+            end
+        else
+            for pl, d in pairs(getgenv().ESPPlayerList) do
+                if d.hl then d.hl:Destroy() end
+                getgenv().ESPPlayerList[pl] = nil
+            end
+        end
+    end
+end)
+
+pcall(function()
+    for _, g in ipairs({game.CoreGui, lp.PlayerGui}) do
+        local o = g:FindFirstChild("BeoFishBtn")
+        if o then o:Destroy() end
+    end
+end)
+local fg = Instance.new("ScreenGui")
+fg.Name = "BeoFishBtn"
+fg.ResetOnSpawn = false
+pcall(function() fg.Parent = game.CoreGui end)
+if not fg.Parent then fg.Parent = lp:WaitForChild("PlayerGui") end
+local fb = Instance.new("TextButton", fg)
+fb.Size = UDim2.new(0, 78, 0, 78)
+fb.Position = UDim2.new(0.86, 0, 0.46, 0)
+fb.BackgroundColor3 = Color3.fromRGB(190, 190, 190)
+fb.Text = "fish"
+fb.TextColor3 = Color3.fromRGB(25, 25, 25)
+fb.Font = Enum.Font.GothamBold
+fb.TextSize = 15
+fb.BorderSizePixel = 0
+fb.Visible = false
+Instance.new("UICorner", fb).CornerRadius = UDim.new(1, 0)
+getgenv().BeoFishButton = fb
+fb.Visible = getgenv().FakeBtn
+fb.MouseButton1Click:Connect(function()
+    pcall(function()
+        if Events:FindFirstChild("Fishing") then Events.Fishing:FireServer() end
+    end)
+end)
+
+local rh = Events:FindFirstChild("RhythmHit")
+local kM = {A = Enum.KeyCode.A, S = Enum.KeyCode.S, D = Enum.KeyCode.D}
+local hN = setmetatable({}, {__mode = "k"})
+local lp2 = 0
+local p2h = {}
+
+local function grab()
+    local m = lp.PlayerGui:FindFirstChild("MainGui")
+    if not m then return end
+    local f = m:FindFirstChild("Fishing")
+    if not f then return end
+    local mo = m:FindFirstChild("Mobile")
+    return {fish = f, rhythm = f:FindFirstChild("Rhythm"), boss = f:FindFirstChild("BossFightBar"), mFish = mo and mo:FindFirstChild("Fishing")}
+end
+
+local function clk(b)
+    if not b then return false end
+    local ok = false
+    if getconnections then
+        for _, n in ipairs({"MouseButton1Down", "MouseButton1Click", "Activated"}) do
+            pcall(function()
+                local s = b[n]
+                if not s then return end
+                for _, c in pairs(getconnections(s)) do
+                    if c.Function then task.spawn(c.Function) ok = true
+                    elseif c.Fire then c:Fire() ok = true end
+                end
+            end)
+        end
+    end
+    if firesignal then
+        pcall(function()
+            firesignal(b.MouseButton1Down)
+            firesignal(b.MouseButton1Click)
+            ok = true
+        end)
+    end
+    return ok
+end
+
+local function doR(g)
+    local r = g.rhythm
+    if not r or not r.Visible then return end
+    if not rh or not rh.Parent then rh = Events:FindFirstChild("RhythmHit") end
+    for _, ln in ipairs({"A", "S", "D"}) do
+        local lf = r:FindFirstChild("Progression" .. ln)
+        if lf then
+            local bf = lf:FindFirstChild("BarFrame")
+            local ty = bf and bf.Position.Y.Scale or 0.85
+            local bt, nt = 0.11, nil
+            for _, ch in ipairs(lf:GetChildren()) do
+                if ch.Name == "Note_FX" and ch:IsA("GuiObject") and ch.Visible and not hN[ch] then
+                    local d = math.abs(ch.Position.Y.Scale - ty)
+                    if d < bt then bt = d nt = ch end
+                end
+            end
+            if nt then
+                hN[nt] = true
+                local b = lf:FindFirstChild("Button") or lf:FindFirstChildWhichIsA("TextButton", true) or lf:FindFirstChildWhichIsA("ImageButton", true)
+                clk(b)
+                local kc = kM[ln]
+                if kc then
+                    pcall(function()
+                        VIM:SendKeyEvent(true, kc, false, game)
+                        task.delay(0.02, function() VIM:SendKeyEvent(false, kc, false, game) end)
+                    end)
+                end
+                if rh then pcall(function() rh:FireServer("hit") end) end
+            end
+        end
+    end
+end
+
+local function doP(g)
+    local b = g.boss
+    if not b or not b.Visible then
+        if #p2h > 0 then table.clear(p2h) end
+        return
+    end
+    local br = b:FindFirstChild("Bar")
+    local hb = b:FindFirstChild("Hitbox")
+    if not br or not hb then return end
+    local nw = os.clock()
+    local bw = br.Size.X.Scale
+    local cx = br.Position.X.Scale + bw * (0.5 - br.AnchorPoint.X)
+    local hw = hb.Size.X.Scale
+    local hl = hb.Position.X.Scale - hw * hb.AnchorPoint.X
+    table.insert(p2h, {t = nw, x = cx})
+    while #p2h > 1 and nw - p2h[1].t >
 local Players = game:GetService("Players")
 local RS = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
