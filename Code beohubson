@@ -51,10 +51,19 @@ local function hasAdm()
 end
 
 local function killAll()
-    getgenv().AutoSell = false; getgenv().HoldBar = false; getgenv().MiniGame = false
-    getgenv().Noclip = false; getgenv().AllSkill = false; getgenv().Water = false
-    getgenv().AutoCast = false; getgenv().ESP_T = false; getgenv().ESP_M = false; getgenv().ESP_P = false
-    getgenv().AutoEnzo = false; getgenv().AutoLong = false; getgenv().AutoBuyBait = false
+    getgenv().AutoSell = false
+    getgenv().HoldBar = false
+    getgenv().MiniGame = false
+    getgenv().Noclip = false
+    getgenv().AllSkill = false
+    getgenv().Water = false
+    getgenv().AutoCast = false
+    getgenv().ESP_T = false
+    getgenv().ESP_M = false
+    getgenv().ESP_P = false
+    getgenv().AutoEnzo = false
+    getgenv().AutoLong = false
+    getgenv().AutoBuyBait = false
 end
 
 task.spawn(function()
@@ -63,7 +72,9 @@ task.spawn(function()
             if hasAdm() and not getgenv().AdminIn then
                 getgenv().AdminIn = true
                 killAll()
-                pcall(function() sg:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5}) end)
+                pcall(function()
+                    sg:SetCore("SendNotification", {Title = "ADMIN", Text = "Script disabled", Duration = 5})
+                end)
             elseif not hasAdm() then
                 getgenv().AdminIn = false
             end
@@ -510,7 +521,6 @@ pages.Shop = function()
     addBtn("Sell All Now", function()
         if rep.Events and rep.Events.SellFish then rep.Events.SellFish:FireServer("All") end
     end)
-
     section("AUTO BUY BAIT")
     addToggle("Auto Buy Bait", function() return getgenv().AutoBuyBait end, function(v) getgenv().AutoBuyBait = v end)
     addSlider("Buy Amount", 1, 100, function() return getgenv().BuyBaitAmount end, function(v) getgenv().BuyBaitAmount = v end)
@@ -541,7 +551,8 @@ pages.More = function()
     end)
     section("SERVER")
     addBtn("Hop Low Players", function()
-        local d = hs:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
+        local d = hs:JSONDecode(game:HttpGet(
+            "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"))
         local best, minP = nil, 999
         if d and d.data then
             for _, s in ipairs(d.data) do
