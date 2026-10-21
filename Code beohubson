@@ -103,7 +103,6 @@ pcall(function()
         if g and g:FindFirstChild("BeoHubUI") then g.BeoHubUI:Destroy() end
     end
 end)
-
 local ac = Color3.fromRGB(0, 210, 255)
 local bg = Color3.fromRGB(12, 14, 20)
 local sd = Color3.fromRGB(16, 18, 26)
@@ -224,7 +223,6 @@ local function makeDrag(obj, isMain)
 end
 makeDrag(tbar, true)
 makeDrag(bubble, false)
-
 local opened = false
 local function toggleUI(v)
     opened = v
@@ -628,7 +626,7 @@ local function addDropdown(t, list, get, set)
     scroll.BackgroundTransparency = 1
     scroll.BorderSizePixel = 0
     scroll.ScrollBarThickness = 3
-    scroll.ScrollBarImageColorY = ac
+    scroll.ScrollBarImageColor3 = ac
     scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
     scroll.ZIndex = 20
@@ -804,11 +802,22 @@ makeTab("TP", "T", 4)
 makeTab("ESP", "E", 5)
 makeTab("More", "M", 6)
 open("Fish")
-local MainGui = me:WaitForChild("PlayerGui"):WaitForChild("MainGui")
-local FishingGui = MainGui:WaitForChild("Fishing")
-local BarFrame = FishingGui:WaitForChild("BarFrame")
-local FishingBar = BarFrame:WaitForChild("Bar")
-local MobileGui = MainGui:FindFirstChild("Mobile")
+local MainGui, FishingGui, BarFrame, FishingBar, MobileGui
+
+local function refreshGuiRefs()
+    local pg = me:FindFirstChild("PlayerGui")
+    MainGui = pg and pg:FindFirstChild("MainGui")
+    FishingGui = MainGui and MainGui:FindFirstChild("Fishing")
+    BarFrame = FishingGui and FishingGui:FindFirstChild("BarFrame")
+    FishingBar = BarFrame and BarFrame:FindFirstChild("Bar")
+    MobileGui = MainGui and MainGui:FindFirstChild("Mobile")
+end
+refreshGuiRefs()
+task.spawn(function()
+    while task.wait(0.5) do
+        refreshGuiRefs()
+    end
+end)
 
 local sk = {"UseSkill", "CastSkill", "Skill", "ActivateSkill", "PlaySkill", "SkillActivate", "DoSkill"}
 
@@ -896,7 +905,6 @@ task.spawn(function()
         end
     end
 end)
-
 local uP = rep:FindFirstChild("Events") and rep.Events:FindFirstChild("UpdateFishProgression")
 local cP = UDim2.new(0.5, 0, 0.5, 0)
 local lk = false
@@ -1104,7 +1112,6 @@ task.spawn(function()
         end
     end
 end)
-
 local eT = {}
 
 local function clrE()
@@ -1401,7 +1408,6 @@ local function StepPhase2MiniGame()
 
     local handledViaUpval = false
     local onClickFn = nil
-    local MobileBtn = MobileGui and MobileGui:Find
     local MobileBtn = MobileGui and MobileGui:FindFirstChild("Fishing")
 
     if getconnections and getupval and MobileBtn then
