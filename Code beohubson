@@ -710,7 +710,7 @@ pages.Boss = function()
         getgenv().AutoLong = v
         if v then getgenv().AutoEnzo = false end
     end)
-    section("MINIGAME (Enzo / Long / Octopus / BlackTortoise")")
+    section("MINIGAME")
     addToggle("Auto MiniGame", function() return getgenv().MiniGame end, function(v) getgenv().MiniGame = v end)
 end
 
