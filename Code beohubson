@@ -12,7 +12,7 @@ local evs = rep:FindFirstChild("Events") or rep
 task.delay(1.5, function()
     pcall(function()
         sg:SetCore("SendNotification", {
-            Title = "BeoHub v7",
+            Title = "BeoHub v7 UI",
             Text = "Script loaded successfully! Keyless & Safe.",
             Icon = "rbxassetid://12053823591",
             Duration = 5
@@ -103,22 +103,28 @@ pcall(function()
         if g and g:FindFirstChild("BeoHubUI") then g.BeoHubUI:Destroy() end
     end
 end)
+local LOGO_ID = 12053823591
+
 local ac = Color3.fromRGB(0, 210, 255)
-local bg = Color3.fromRGB(12, 14, 20)
-local sd = Color3.fromRGB(16, 18, 26)
-local cd = Color3.fromRGB(22, 25, 34)
+local bg = Color3.fromRGB(10, 12, 18)
+local sd = Color3.fromRGB(14, 17, 26)
+local cd = Color3.fromRGB(20, 24, 36)
+local soft = Color3.fromRGB(28, 34, 48)
 
 local gui = Instance.new("ScreenGui")
 gui.Name = "BeoHubUI"
 gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
+gui.DisplayOrder = 40
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 pcall(function() gui.Parent = game.CoreGui end)
 if not gui.Parent then gui.Parent = me:WaitForChild("PlayerGui") end
 
 local bubble = Instance.new("TextButton", gui)
-bubble.Size = UDim2.new(0, 48, 0, 48)
+bubble.Size = UDim2.fromOffset(50, 50)
 bubble.Position = UDim2.new(0.03, 0, 0.42, 0)
 bubble.BackgroundColor3 = bg
+bubble.BackgroundTransparency = 0.08
 bubble.Text = "B"
 bubble.TextColor3 = ac
 bubble.Font = Enum.Font.GothamBlack
@@ -126,37 +132,69 @@ bubble.TextSize = 20
 bubble.BorderSizePixel = 0
 bubble.AutoButtonColor = false
 Instance.new("UICorner", bubble).CornerRadius = UDim.new(1, 0)
-
 local bStroke = Instance.new("UIStroke", bubble)
 bStroke.Color = ac
-bStroke.Thickness = 2
+bStroke.Thickness = 1.8
+bStroke.Transparency = 0.15
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 400, 0, 320)
-main.Position = UDim2.new(0.5, -200, 0.5, -160)
+main.Size = UDim2.fromOffset(420, 340)
+main.Position = UDim2.new(0.5, -210, 0.5, -170)
 main.BackgroundColor3 = bg
+main.BackgroundTransparency = 0.06
 main.BorderSizePixel = 0
 main.Visible = false
 main.Active = true
-Instance.new("UICorner", main).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", main).Color = Color3.fromRGB(40, 50, 70)
+main.ClipsDescendants = true
+Instance.new("UICorner", main).CornerRadius = UDim.new(0, 16)
+local mainStroke = Instance.new("UIStroke", main)
+mainStroke.Color = Color3.fromRGB(0, 190, 240)
+mainStroke.Thickness = 1.4
+mainStroke.Transparency = 0.4
+local mainGrad = Instance.new("UIGradient", main)
+mainGrad.Rotation = 125
+mainGrad.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(16, 20, 32)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 10, 16))
+})
+
+local accent = Instance.new("Frame", main)
+accent.Size = UDim2.new(1, 0, 0, 2)
+accent.BackgroundColor3 = ac
+accent.BorderSizePixel = 0
+local accentGrad = Instance.new("UIGradient", accent)
+accentGrad.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 1),
+    NumberSequenceKeypoint.new(0.5, 0.1),
+    NumberSequenceKeypoint.new(1, 1)
+})
 
 local tbar = Instance.new("Frame", main)
-tbar.Size = UDim2.new(1, 0, 0, 38)
-tbar.BackgroundColor3 = sd
-tbar.BorderSizePixel = 0
-Instance.new("UICorner", tbar).CornerRadius = UDim.new(0, 12)
+tbar.Size = UDim2.new(1, 0, 0, 44)
+tbar.BackgroundTransparency = 1
+tbar.Active = true
 
-local line = Instance.new("Frame", tbar)
-line.Size = UDim2.new(0, 3, 0, 18)
-line.Position = UDim2.new(0, 12, 0.5, -9)
-line.BackgroundColor3 = ac
-line.BorderSizePixel = 0
-Instance.new("UICorner", line).CornerRadius = UDim.new(1, 0)
+local logoWrap = Instance.new("Frame", tbar)
+logoWrap.Size = UDim2.fromOffset(30, 30)
+logoWrap.Position = UDim2.new(0, 12, 0.5, -15)
+logoWrap.BackgroundColor3 = soft
+logoWrap.BorderSizePixel = 0
+Instance.new("UICorner", logoWrap).CornerRadius = UDim.new(0, 8)
+local logoStroke = Instance.new("UIStroke", logoWrap)
+logoStroke.Color = ac
+logoStroke.Thickness = 1
+logoStroke.Transparency = 0.45
+
+local logo = Instance.new("ImageLabel", logoWrap)
+logo.Size = UDim2.new(1, -4, 1, -4)
+logo.Position = UDim2.fromOffset(2, 2)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://" .. tostring(LOGO_ID)
+logo.ScaleType = Enum.ScaleType.Fit
 
 local txt = Instance.new("TextLabel", tbar)
-txt.Size = UDim2.new(1, -80, 1, 0)
-txt.Position = UDim2.new(0, 22, 0, 0)
+txt.Size = UDim2.new(1, -120, 1, 0)
+txt.Position = UDim2.new(0, 50, 0, 0)
 txt.BackgroundTransparency = 1
 txt.Text = "BeoHub v7"
 txt.TextColor3 = Color3.fromRGB(240, 245, 255)
@@ -164,27 +202,40 @@ txt.Font = Enum.Font.GothamBold
 txt.TextSize = 15
 txt.TextXAlignment = Enum.TextXAlignment.Left
 
+local tag = Instance.new("TextLabel", tbar)
+tag.Size = UDim2.fromOffset(48, 16)
+tag.Position = UDim2.new(0, 140, 0.5, -8)
+tag.BackgroundColor3 = Color3.fromRGB(0, 160, 200)
+tag.BackgroundTransparency = 0.7
+tag.Text = "KEYLESS"
+tag.TextColor3 = Color3.fromRGB(120, 230, 255)
+tag.Font = Enum.Font.GothamBold
+tag.TextSize = 9
+Instance.new("UICorner", tag).CornerRadius = UDim.new(0, 6)
+
 local closeB = Instance.new("TextButton", tbar)
-closeB.Size = UDim2.new(0, 28, 0, 28)
-closeB.Position = UDim2.new(1, -34, 0.5, -14)
-closeB.BackgroundColor3 = Color3.fromRGB(30, 34, 48)
+closeB.Size = UDim2.fromOffset(28, 28)
+closeB.Position = UDim2.new(1, -38, 0.5, -14)
+closeB.BackgroundColor3 = Color3.fromRGB(36, 28, 36)
 closeB.Text = "x"
-closeB.TextColor3 = Color3.fromRGB(200, 200, 210)
+closeB.TextColor3 = Color3.fromRGB(220, 160, 170)
 closeB.Font = Enum.Font.GothamBold
-closeB.TextSize = 16
+closeB.TextSize = 15
 closeB.BorderSizePixel = 0
+closeB.AutoButtonColor = false
 Instance.new("UICorner", closeB).CornerRadius = UDim.new(0, 8)
 
 local side = Instance.new("Frame", main)
-side.Size = UDim2.new(0, 52, 1, -46)
-side.Position = UDim2.new(0, 6, 0, 42)
+side.Size = UDim2.new(0, 54, 1, -56)
+side.Position = UDim2.new(0, 8, 0, 48)
 side.BackgroundColor3 = sd
+side.BackgroundTransparency = 0.15
 side.BorderSizePixel = 0
-Instance.new("UICorner", side).CornerRadius = UDim.new(0, 10)
+Instance.new("UICorner", side).CornerRadius = UDim.new(0, 12)
 
 local cont = Instance.new("ScrollingFrame", main)
-cont.Size = UDim2.new(1, -70, 1, -50)
-cont.Position = UDim2.new(0, 64, 0, 44)
+cont.Size = UDim2.new(1, -76, 1, -60)
+cont.Position = UDim2.new(0, 70, 0, 50)
 cont.BackgroundTransparency = 1
 cont.BorderSizePixel = 0
 cont.ScrollBarThickness = 3
@@ -201,28 +252,41 @@ local function getNum()
     return num
 end
 
-local function makeDrag(obj, isMain)
-    local drag, sPos, sFrame
-    obj.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            drag = true
-            sPos = i.Position
-            sFrame = (isMain and main or obj).Position
+local function makeDrag(frame, handle)
+    local dragging = false
+    local startMouse, startPos
+
+    handle.InputBegan:Connect(function(i)
+        if i.UserInputType == Enum.UserInputType.MouseButton1
+            or i.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            startMouse = i.Position
+            startPos = frame.Position
             i.Changed:Connect(function()
-                if i.UserInputState == Enum.UserInputState.End then drag = false end
+                if i.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
             end)
         end
     end)
+
     uis.InputChanged:Connect(function(i)
-        if drag and (i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch) then
-            local d = i.Position - sPos
-            local t = isMain and main or obj
-            t.Position = UDim2.new(sFrame.X.Scale, sFrame.X.Offset + d.X, sFrame.Y.Scale, sFrame.Y.Offset + d.Y)
+        if not dragging then return end
+        if i.UserInputType == Enum.UserInputType.MouseMovement
+            or i.UserInputType == Enum.UserInputType.Touch then
+            local d = i.Position - startMouse
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + d.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + d.Y
+            )
         end
     end)
 end
-makeDrag(tbar, true)
-makeDrag(bubble, false)
+makeDrag(main, tbar)
+makeDrag(bubble, bubble)
+
 local opened = false
 local function toggleUI(v)
     opened = v
@@ -249,7 +313,7 @@ end
 local function open(name)
     clear()
     for n, b in pairs(tabs) do
-        b.BackgroundColor3 = (n == name) and Color3.fromRGB(28, 40, 55) or Color3.fromRGB(16, 18, 26)
+        b.BackgroundColor3 = (n == name) and Color3.fromRGB(24, 38, 56) or Color3.fromRGB(14, 17, 26)
         local ic = b:FindFirstChild("Icon")
         if ic then ic.TextColor3 = (n == name) and ac or Color3.fromRGB(120, 130, 150) end
     end
@@ -258,12 +322,13 @@ end
 
 local function makeTab(name, icon, order)
     local b = Instance.new("TextButton", side)
-    b.Size = UDim2.new(1, -8, 0, 40)
-    b.Position = UDim2.new(0, 4, 0, 4 + (order - 1) * 44)
-    b.BackgroundColor3 = Color3.fromRGB(16, 18, 26)
+    b.Size = UDim2.new(1, -10, 0, 40)
+    b.Position = UDim2.new(0, 5, 0, 6 + (order - 1) * 46)
+    b.BackgroundColor3 = Color3.fromRGB(14, 17, 26)
     b.Text = ""
     b.BorderSizePixel = 0
-    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 8)
+    b.AutoButtonColor = false
+    Instance.new("UICorner", b).CornerRadius = UDim.new(0, 10)
     local ic = Instance.new("TextLabel", b)
     ic.Name = "Icon"
     ic.Size = UDim2.new(1, 0, 1, 0)
@@ -1282,7 +1347,6 @@ fb.MouseButton1Click:Connect(function()
     end)
 end)
 
--- minigame
 local rhythmLanes = {"A", "S", "D"}
 local rhythmKeyMap = {
     A = Enum.KeyCode.A,
