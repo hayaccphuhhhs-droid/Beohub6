@@ -1505,3 +1505,5 @@ end
 
 if getgenv().Water then pcall(setWalkOnWater, true) end
 if getgenv().FullBright or getgenv().NoFog then pcall(applyLighting) end
+
+print("[BeoHub v8] Single-file SAFE ready")
