@@ -165,10 +165,12 @@ Fish:Toggle("All Skills", getgenv().AllSkill, function(v)
     getgenv().AllSkill = v
     saveCfg()
 end)
-Fish:Toggle("Skill Z", getgenv().SkZ, function(v) getgenv().SkZ = v; saveCfg() end)
-Fish:Toggle("Skill X", getgenv().SkX, function(v) getgenv().SkX = v; saveCfg() end)
-Fish:Toggle("Skill C", getgenv().SkC, function(v) getgenv().SkC = v; saveCfg() end)
-Fish:Toggle("Skill V", getgenv().SkV, function(v) getgenv().SkV = v; saveCfg() end)
+Fish:SkillRow({ "Z", "X", "C", "V" }, function(k)
+    return getgenv()["Sk" .. k]
+end, function(k, on)
+    getgenv()["Sk" .. k] = on
+    saveCfg()
+end)
 
 local Shop = Win:Tab("Shop", "S")
 Shop:Section("SELL")
