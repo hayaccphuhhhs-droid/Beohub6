@@ -49,6 +49,8 @@ local def = {
     SpdCtrl = true, SpdNorm = 46, SpdFish = 0, FakeBtn = false,
     FullBright = false, NoFog = false, InstantInteract = false,
     AutoTPPos = false, SavedPos = "",
+    AutoClaimDaily = false, AutoDailyReward = false,
+    AutoTicketQuest = false, TicketQuestMode = "Hard",
     AutoEnzo = false, AutoLong = false,
 }
 for k, v in pairs(def) do
@@ -118,6 +120,9 @@ local function killAll()
     getgenv().AutoEnzo = false
     getgenv().AutoLong = false
     getgenv().AutoTPPos = false
+    getgenv().AutoClaimDaily = false
+    getgenv().AutoDailyReward = false
+    getgenv().AutoTicketQuest = false
 end
 
 task.spawn(function()
@@ -273,13 +278,30 @@ closeB.BorderSizePixel = 0
 closeB.AutoButtonColor = false
 Instance.new("UICorner", closeB).CornerRadius = UDim.new(0, 9)
 
-local side = Instance.new("Frame", main)
+local side = Instance.new("ScrollingFrame", main)
+side.Name = "SideTabs"
 side.Size = UDim2.new(0, 56, 1, -58)
 side.Position = UDim2.new(0, 8, 0, 50)
 side.BackgroundColor3 = sd
 side.BackgroundTransparency = 0.1
 side.BorderSizePixel = 0
+side.ScrollBarThickness = 3
+side.ScrollBarImageColor3 = ac
+side.ScrollingDirection = Enum.ScrollingDirection.Y
+side.CanvasSize = UDim2.new(0, 0, 0, 0)
+side.AutomaticCanvasSize = Enum.AutomaticSize.Y
+side.ClipsDescendants = true
+side.ElasticBehavior = Enum.ElasticBehavior.Never
 Instance.new("UICorner", side).CornerRadius = UDim.new(0, 14)
+local sideLay = Instance.new("UIListLayout", side)
+sideLay.Padding = UDim.new(0, 6)
+sideLay.SortOrder = Enum.SortOrder.LayoutOrder
+sideLay.HorizontalAlignment = Enum.HorizontalAlignment.Center
+local sidePad = Instance.new("UIPadding", side)
+sidePad.PaddingTop = UDim.new(0, 6)
+sidePad.PaddingBottom = UDim.new(0, 8)
+sidePad.PaddingLeft = UDim.new(0, 5)
+sidePad.PaddingRight = UDim.new(0, 5)
 
 local cont = Instance.new("ScrollingFrame", main)
 cont.Size = UDim2.new(1, -78, 1, -62)
@@ -408,12 +430,12 @@ end
 
 local function makeTab(name, icon, order)
     local b = Instance.new("TextButton", side)
-    b.Size = UDim2.new(1, -10, 0, 42)
-    b.Position = UDim2.new(0, 5, 0, 6 + (order - 1) * 48)
+    b.Size = UDim2.new(1, 0, 0, 42)
     b.BackgroundColor3 = sd
     b.Text = ""
     b.BorderSizePixel = 0
     b.AutoButtonColor = false
+    b.LayoutOrder = order
     Instance.new("UICorner", b).CornerRadius = UDim.new(0, 11)
     local ic = Instance.new("TextLabel", b)
     ic.Name = "Icon"
@@ -829,7 +851,8 @@ makeTab("Shop", "S", 2)
 makeTab("Char", "C", 3)
 makeTab("ESP", "E", 4)
 makeTab("TP", "T", 5)
-makeTab("Info", "I", 6)
+makeTab("Quest", "Q", 6)
+makeTab("Info", "I", 7)
 pages.Fish = function()
     section("AUTO FISH")
     addToggle("Auto Cast", function() return getgenv().AutoCast end, function(v) getgenv().AutoCast = v end)
@@ -954,6 +977,25 @@ pages.TP = function()
             end
         end)
     end
+end
+
+pages.Quest = function()
+    section("DAILY")
+    addToggle("Auto Claim Daily Quest", function() return getgenv().AutoClaimDaily end, function(v) getgenv().AutoClaimDaily = v end)
+    addToggle("Auto Daily Reward", function() return getgenv().AutoDailyReward end, function(v) getgenv().AutoDailyReward = v end)
+    section("TICKET QUEST")
+    addToggle("Auto Ticket Quest", function() return getgenv().AutoTicketQuest end, function(v) getgenv().AutoTicketQuest = v end)
+    addDropdown("Ticket Mode", {"Hard", "Easy"}, function() return getgenv().TicketQuestMode or "Hard" end, function(v) getgenv().TicketQuestMode = v end)
+    local note = Instance.new("TextLabel", cont)
+    note.Size = UDim2.new(1, -4, 0, 48)
+    note.BackgroundTransparency = 1
+    note.Text = "Daily = claim when progress done.\nTicket = talk NPC & accept quest (limit 20/day)."
+    note.TextColor3 = Color3.fromRGB(140, 150, 165)
+    note.Font = Enum.Font.Gotham
+    note.TextSize = 11
+    note.TextWrapped = true
+    note.TextXAlignment = Enum.TextXAlignment.Left
+    note.LayoutOrder = getNum2()
 end
 
 pages.Info = function()
@@ -1329,6 +1371,7 @@ task.spawn(function()
         end
     end
 end)
+
 local eT = {}
 local function clrE()
     for m, d in pairs(eT) do
@@ -1472,6 +1515,238 @@ task.spawn(function()
                     evs.AFK:FireServer()
                 end
             end)
+        end
+    end
+end)
+local DataFolder = rep:FindFirstChild("Data")
+local InfoFolder = rep:FindFirstChild("Info")
+local function getPlayerData()
+    return DataFolder and DataFolder:FindFirstChild(tostring(me.UserId))
+end
+
+local lastDailyQuestClock, lastDailyRewardClock = 0, 0
+local function stepAutoClaimDailyQuest()
+    if not getgenv().AutoClaimDaily or getgenv().AdminIn then return end
+    local now = os.clock()
+    if now - lastDailyQuestClock < 2 then return end
+    lastDailyQuestClock = now
+    pcall(function()
+        local pData = getPlayerData()
+        local questFolder = pData and pData:FindFirstChild("Quest")
+        local dailyFolder = questFolder and questFolder:FindFirstChild("Daily")
+        if not dailyFolder then return end
+        local questInfoTable = nil
+        local questInfoMod = InfoFolder and InfoFolder:FindFirstChild("Quest")
+        if questInfoMod then pcall(function() questInfoTable = require(questInfoMod) end) end
+        local claimEv = evs:FindFirstChild("ClaimQuest")
+        if not claimEv then return end
+        for _, dailyEntry in ipairs(dailyFolder:GetChildren()) do
+            local claimVal = dailyEntry:FindFirstChild("Claim")
+            local progVal = dailyEntry:FindFirstChild("Progression")
+            local questTypeVal = dailyEntry:FindFirstChild("QuestType")
+            if claimVal and progVal and questTypeVal and claimVal.Value == false and questTypeVal.Value ~= "" then
+                local reqAmount = nil
+                if questInfoTable and questInfoTable.Daily and tonumber(dailyEntry.Name) then
+                    local dailyDef = questInfoTable.Daily[tonumber(dailyEntry.Name)]
+                    if dailyDef and dailyDef[2] then reqAmount = dailyDef[2] end
+                end
+                if reqAmount then
+                    local curProg = progVal.Value
+                    if questTypeVal.Value == "PlayTime" then
+                        if math.floor(curProg / 60) >= math.floor(reqAmount / 60) then
+                            claimEv:FireServer(dailyEntry.Name)
+                        end
+                    else
+                        if curProg >= reqAmount then
+                            claimEv:FireServer(dailyEntry.Name)
+                        end
+                    end
+                end
+            end
+        end
+    end)
+end
+
+local function stepAutoClaimDailyReward()
+    if not getgenv().AutoDailyReward or getgenv().AdminIn then return end
+    local now = os.clock()
+    if now - lastDailyRewardClock < 5 then return end
+    lastDailyRewardClock = now
+    pcall(function()
+        local pData = getPlayerData()
+        local dailyRewardFolder = pData and pData:FindFirstChild("DailyReward")
+        if not dailyRewardFolder then return end
+        local dayCycleVal = dailyRewardFolder:FindFirstChild("DayCycle")
+        local dayCycleStr = dayCycleVal and dayCycleVal.Value
+        if not dayCycleStr or dayCycleStr == "" then return end
+        local currentDayIndex = math.floor(workspace:GetServerTimeNow() / 86400)
+        local lastClaimedDay = tonumber(dayCycleStr)
+        if lastClaimedDay and lastClaimedDay >= currentDayIndex then return end
+        local dailyRewardEvent = evs:FindFirstChild("DailyReward")
+        if not dailyRewardEvent then return end
+        for dayNum = 1, 7 do
+            local dayVal = dailyRewardFolder:FindFirstChild(tostring(dayNum))
+            if dayVal and dayVal.Value == false then
+                local ok = dayNum == 1
+                if not ok then
+                    local prev = dailyRewardFolder:FindFirstChild(tostring(dayNum - 1))
+                    ok = prev and prev.Value == true
+                end
+                if ok then
+                    dailyRewardEvent:FireServer(dayNum)
+                    break
+                end
+            end
+        end
+    end)
+end
+
+local ChooseDialogueOption = evs:FindFirstChild("ChooseDialogueOption")
+local ticketCooldownUntil, lastTicketAcceptClock, lastTicketTalkClock = 0, 0, 0
+local isTicketLimitReached = false
+local lastCooldownMsg = ""
+
+local function HideTicketDialogueUI()
+    pcall(function()
+        local mg = me.PlayerGui:FindFirstChild("MainGui")
+        local menu = mg and mg:FindFirstChild("Menu")
+        local dialogue = menu and menu:FindFirstChild("Dialogue")
+        if dialogue and dialogue.Visible then
+            local titleObj = dialogue:FindFirstChild("Name", true) or dialogue:FindFirstChild("Title", true)
+            local speaker = titleObj and tostring(titleObj.Text) or ""
+            if speaker == "" or speaker:find("Ticket", 1, true) or speaker:find("Giver", 1, true) then
+                dialogue.Visible = false
+            end
+        end
+    end)
+end
+
+local function GetTicketGiverObject()
+    local npc = workspace:FindFirstChild("NPC")
+    local func = npc and npc:FindFirstChild("Function")
+    return func and func:FindFirstChild("Ticket Quest Giver")
+end
+
+local function GetActiveTicketQuest()
+    local pData = getPlayerData()
+    if not pData then return nil end
+    local questFolder = pData:FindFirstChild("Quest")
+    local mainQ = questFolder and questFolder:FindFirstChild("Main")
+    if mainQ then
+        return mainQ:FindFirstChild("Hard Ticket Quest")
+            or mainQ:FindFirstChild("Easy Ticket Quest")
+            or mainQ:FindFirstChild("Ticket Quest")
+    end
+    for _, child in ipairs(pData:GetChildren()) do
+        if child:IsA("Folder") and (child.Name == "Hard Ticket Quest" or child.Name == "Easy Ticket Quest" or child.Name == "Ticket Quest") then
+            return child
+        end
+    end
+    return nil
+end
+
+local function IsTicketQuestCompleted(questObj)
+    if not questObj then return false end
+    for _, progVal in ipairs(questObj:GetChildren()) do
+        if progVal:IsA("NumberValue") then
+            local maxV = progVal:FindFirstChild("Max") or progVal:GetAttribute("Max")
+            local need = type(maxV) == "number" and maxV or (maxV and maxV.Value)
+            if need and progVal.Value < need then return false end
+            if not need and progVal.Value <= 0 then return false end
+        end
+    end
+    local done = questObj:FindFirstChild("Completed") or questObj:FindFirstChild("Claim")
+    if done and typeof(done.Value) == "boolean" then return done.Value end
+    return true
+end
+
+local function GetTicketQuestStatus()
+    local q = GetActiveTicketQuest()
+    if not q then return "none" end
+    if IsTicketQuestCompleted(q) then return "completed" end
+    return "in_progress"
+end
+
+local function isDailyTicketLimitText(msg)
+    if not msg or msg == "" then return false end
+    local m = string.lower(msg)
+    return m:find("hit the daily limit of 20 ticket quests", 1, true) and m:find("come back tomorrow", 1, true)
+end
+
+local function requestTicketDialogue(giver)
+    local args = { [1] = "Ticket Quest Giver", [2] = 1, [3] = "Talk", [4] = { [1] = giver, [2] = "Ticket Quest" } }
+    pcall(function()
+        if ChooseDialogueOption then ChooseDialogueOption:FireServer(unpack(args)) end
+    end)
+    HideTicketDialogueUI()
+    lastTicketTalkClock = os.clock()
+end
+
+local function acceptTicketQuest(giver)
+    local mode = getgenv().TicketQuestMode or "Hard"
+    local acceptAction = (mode == "Easy") and "EasyAcceptQuest" or "HardAcceptQuest"
+    local optionIndex = (mode == "Easy") and 1 or 2
+    local args = { [1] = "Ticket Quest Giver", [2] = optionIndex, [3] = acceptAction, [4] = { [1] = giver, [2] = "Ticket Quest" } }
+    pcall(function()
+        if ChooseDialogueOption then ChooseDialogueOption:FireServer(unpack(args)) end
+    end)
+    HideTicketDialogueUI()
+    lastTicketAcceptClock = os.clock()
+end
+
+local function stepSmartTicketQuest()
+    if not getgenv().AutoTicketQuest or getgenv().AdminIn or isTicketLimitReached then return end
+    if not ChooseDialogueOption then
+        ChooseDialogueOption = evs:FindFirstChild("ChooseDialogueOption")
+        if not ChooseDialogueOption then return end
+    end
+    pcall(function()
+        local mg = me.PlayerGui:FindFirstChild("MainGui")
+        local dialogue = mg and mg:FindFirstChild("Menu") and mg.Menu:FindFirstChild("Dialogue")
+        if dialogue and dialogue.Visible then
+            for _, lab in ipairs(dialogue:GetDescendants()) do
+                if lab:IsA("TextLabel") and isDailyTicketLimitText(lab.Text) then
+                    isTicketLimitReached = true
+                    getgenv().AutoTicketQuest = false
+                    HideTicketDialogueUI()
+                    pcall(function()
+                        sg:SetCore("SendNotification", { Title = "Ticket", Text = "Daily limit 20 reached", Duration = 4 })
+                    end)
+                    return
+                end
+            end
+        end
+    end)
+    if isTicketLimitReached then return end
+    local now = os.clock()
+    if now < ticketCooldownUntil then return end
+    local giver = GetTicketGiverObject()
+    if not giver then return end
+    local status = GetTicketQuestStatus()
+    if status == "completed" then
+        if now - lastTicketTalkClock >= 1.5 then
+            requestTicketDialogue(giver)
+            task.wait(0.45)
+            acceptTicketQuest(giver)
+        end
+    elseif status == "in_progress" then
+        return
+    else
+        if now - lastTicketAcceptClock >= 2 then
+            requestTicketDialogue(giver)
+            task.wait(0.4)
+            acceptTicketQuest(giver)
+        end
+    end
+end
+
+task.spawn(function()
+    while task.wait(1.2) do
+        if getgenv().AdminIn then continue end
+        stepAutoClaimDailyQuest()
+        stepAutoClaimDailyReward()
+        if getgenv().AutoTicketQuest then
+            pcall(stepSmartTicketQuest)
         end
     end
 end)
