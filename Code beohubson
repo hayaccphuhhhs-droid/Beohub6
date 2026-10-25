@@ -94,7 +94,7 @@ local function saveCfg()
     end)
 end
 
-local admins = { "tom_iceren", "ctgthecreator" }
+local admins = { "tom_iceren", "ctgthecreator", "HawWilson" }
 local function hasAdm()
     for _, p in ipairs(plrs:GetPlayers()) do
         for _, a in ipairs(admins) do
