@@ -1,1 +1,1 @@
-loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/BEOHUB1/refs/heads/main/BeoHubv8.3"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/hayaccphuhhhs-droid/BeoHubv8.3/refs/heads/main/BeoHub_v8.3_BaitTest.lua"))()
